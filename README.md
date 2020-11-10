@@ -9,7 +9,8 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - bugfixes
 - tweaked some preferences and pin assignments
 - modified for use with an LGT8F328p LQFP32 board (but should work with a Nano as well). 
-- Added support for an OLED display (courtesty of the superb 8g2 library: https://github.com/olikraus/u8g2/wiki)
+- Added support for an OLED display (courtesty of the superb u8g2 library: https://github.com/olikraus/u8g2/wiki)
+- Required libraries: TimeOne by Paul Stoffregen // MIDI Library by Forty Seven Effects // u8g2 by olikraus
 
 ## Todo:
 - Display cool stuff on the OLED
