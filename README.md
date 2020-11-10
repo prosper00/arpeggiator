@@ -1,6 +1,9 @@
 # arpeggiator
 Arduino MIDI arpeggiator, based on original work found here: https://github.com/raszhivin/arpeggiator
 
+![Prototype](20201110_152001.jpg?raw=true "Prototype")
+
+
 ## Done:
 - built up the circuit on a protoboard
 - bugfixes
