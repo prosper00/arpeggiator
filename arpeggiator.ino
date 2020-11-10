@@ -1,53 +1,107 @@
 
 #include <TimerOne.h>
 #include "engine.h"
+
+#include <U8x8lib.h>
+
+
 arp a(C, 5, 2, 6, 200, c_harmonic, 0);
-bool button_pressed;
-int ButtonVal;
+volatile bool button_pressed = 0;
+volatile int ButtonVal =1;
 
-#define baseNotepin 1
-#define baseOctavepin 5
-#define octaveShiftpin 0
-#define stepspin 4
-#define indelaypin 3
-#define orderpin 7
-#define modepin 6
-#define syncinpin 3
+#define octaveShiftpin A0
+#define baseNotepin A1
+#define indelaypin A2
+#define stepspin A3
+#define baseOctavepin A4
+#define modepin A5
+#define orderpin A6
+#define OLEDSDA D4
+#define OLEDSCA D3
 
-#define LEDPin 13
+#define LEDPin 5
 
-// Synchronization: choose one of two possible options:
-#define EXT_SYNC
-//#define INT_SYNC
+U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(OLEDSCA, OLEDSDA);
+
 
 void readPoties()
 {
-  unsigned i;
-  a.setupArp(analogRead(baseNotepin), analogRead(baseOctavepin), analogRead(octaveShiftpin), analogRead(stepspin), analogRead(indelaypin), analogRead(orderpin), analogRead(modepin));
-  
-  // In my setup the buttons are connected to pins 6..12
-  for (i=12;i>5;i--)
-    if (!(digitalRead(i))) { button_pressed = true; ButtonVal = 13-i; return; }
+    int baseNote=analogRead(baseNotepin);
+    int baseOctave=analogRead(baseOctavepin);
+    int octaveShift=analogRead(octaveShiftpin);
+    int steps=analogRead(stepspin);
+    int indelay=analogRead(indelaypin);
+    int order=analogRead(orderpin);
+    int mode=analogRead(modepin);
+    
+    a.setupArp(baseNote, baseOctave, octaveShift, steps, indelay, order, mode);
+
+    if (!(digitalRead(6))) {
+      button_pressed = true;
+      ButtonVal = 1;
+      return;
+    }
+    if (!(digitalRead(7))) {
+      button_pressed = true;
+      ButtonVal = 2;
+      return;
+    }
+    if (!(digitalRead(8))) {
+      button_pressed = true;
+      ButtonVal = 3;
+      return;
+    }
+    if (!(digitalRead(9))) {
+      button_pressed = true;
+      ButtonVal = 4;
+      return;      
+    }
+    if (!(digitalRead(10))) {
+      button_pressed = true;
+      ButtonVal = 5;
+      return;
+    }
+    if (!(digitalRead(11))) {
+      button_pressed = true;
+      ButtonVal = 6;
+      return;
+    }
+    if (!(digitalRead(12))) {
+      button_pressed = true;
+      ButtonVal = 7;
+      return;
+    }
 }
 
 void setup()
 {
-  a.midibegin();
-  Timer1.initialize(200000);          // initialize timer1, and set a 1/10 second period
-  Timer1.attachInterrupt(readPoties); // We will read potis and buttons values within timer interrupt
+  analogReference(DEFAULT);
+  analogReadResolution(10);
   
+  a.midibegin();
+ 
   // LED pin
   pinMode(LEDPin, OUTPUT);
   
-  // Initialize pins for 2-pins pushbuttons with pullup enabled
-  for (unsigned i=6;i<13;i++)
-  {
-    pinMode(i,INPUT_PULLUP);
-    //pinMode(i, INPUT);
-    //digitalWrite(i, 1);
-  }
+  pinMode(6, INPUT_PULLUP);
+  pinMode(7, INPUT_PULLUP);
+  pinMode(8, INPUT_PULLUP);
+  pinMode(9, INPUT_PULLUP);
+  pinMode(10, INPUT_PULLUP);
+  pinMode(11, INPUT_PULLUP);
+  pinMode(12, INPUT_PULLUP);
+    
   button_pressed = false;
-  ButtonVal = 1;
+ 
+  Timer1.initialize(20000);          // initialize timer1, and set a 1/10 second period
+  Timer1.attachInterrupt(readPoties); // We will read potis and buttons values within timer interrupt
+
+  pinMode(OLEDSDA,OUTPUT);
+  pinMode(OLEDSCA,OUTPUT);
+  digitalWrite(OLEDSDA,0);
+  digitalWrite(OLEDSCA,0);
+  u8x8.begin();
+  u8x8.setPowerSave(0);
 }
 
 void loop()
@@ -64,4 +118,35 @@ void loop()
       // Switch off LED
       digitalWrite(LEDPin, LOW);
     }
+  
+  u8x8.setFont(u8x8_font_artossans8_r);
+  u8x8.drawString(0,0,"Arpeggiator 6000");
+/*  switch(a.mode){
+    case 0:
+      u8x8.drawString(0,1,"ionian");
+      break;
+    case 1:
+      u8x8.drawString(0,1,"dorian");
+      break;
+    case 2:
+      u8x8.drawString(0,1,"phrygian");
+      break;
+    case 3:
+      u8x8.drawString(0,1,"lydian");
+      break;
+    case 4:
+      u8x8.drawString(0,1,"mixolydian");
+      break;
+    case 5:
+      u8x8.drawString(0,1,"aeolian");
+      break;
+    case 6:
+      u8x8.drawString(0,1,"harmonic");
+      break;
+    case 7:
+      u8x8.drawString(0,1,"locrian");
+      break;
+  }*/
+  u8x8.refreshDisplay(); 
+
 }

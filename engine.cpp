@@ -1,31 +1,38 @@
 #include "engine.h"
+
+/*#include <SoftwareSerial.h>
+SoftwareSerial softSerial(14,16);
+MIDI_CREATE_INSTANCE(SoftwareSerial, softSerial, MIDI);
+*/
+
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 // C Ionian     { C maj;  D min;  E min;  F maj;  G maj;  A min;  B dim  }
 const chord ionian[7]     = {{0, maj},    {2, minor}, {4, minor}, {5, maj},   {7, maj},   {9, minor}, {11, dim}};
 
 // C Dorian     { C min;  D min;  D♯ maj; F maj;  G min;  A dim;  A♯ maj  }
-const chord dorian[7]     = {{0, minor},  {2, minor}, {3, maj},   {5, maj},   {7, minor}, {9, dim},   {10, maj}};
+const  chord dorian[7]     = {{0, minor},  {2, minor}, {3, maj},   {5, maj},   {7, minor}, {9, dim},   {10, maj}};
 
 //C Phrygian    { C min;  C♯ maj; D♯ maj; F min;  G dim;  G♯ maj; A♯ min  }
-const chord phrygian[7]   = {{0, minor},  {1, maj},   {3, maj},   {5, minor}, {7, dim},   {8, maj},   {10, minor}};
+const  chord phrygian[7]   = {{0, minor},  {1, maj},   {3, maj},   {5, minor}, {7, dim},   {8, maj},   {10, minor}};
 
 //C Lydian      { C maj;  D maj;  E min;  F♯ dim; G maj;  A min;  B min   }
 const chord lydian[7]     = {{0, maj},    {2, maj},   {4, minor}, {6, dim},   {7, maj},   {9, minor}, {11, minor}};
 
 //C Mixolydian  { C maj;  D min;  E dim;  F maj;  G min;  A min;  A♯ maj  }
-const chord mixolydian[7] = {{0, maj},    {2, minor}, {4, dim},   {5, maj},   {7, minor}, {9, minor}, {10, maj}};
+const  chord mixolydian[7] = {{0, maj},    {2, minor}, {4, dim},   {5, maj},   {7, minor}, {9, minor}, {10, maj}};
 
 //C Aeolian     { C min;  D dim;  D♯ maj; F min;  G min;  G♯ maj; A♯ maj  }
-const chord aeolian[7]    = {{0, minor},  {2, dim},   {3, maj},   {5, minor}, {7, minor}, {8, maj},   {10, maj}};
+const  chord aeolian[7]    = {{0, minor},  {2, dim},   {3, maj},   {5, minor}, {7, minor}, {8, maj},   {10, maj}};
 
 //C harmonic    { C min;  D dim;  D♯ aug; F min;  G maj;  G♯ maj; B dim   }
-const chord harmonic[7]   = {{0, minor},  {2, dim},   {3, aug},   {5, minor}, {7, maj},   {8, maj},   {11, dim}}; 
+const  chord harmonic[7]   = {{0, minor},  {2, dim},   {3, aug},   {5, minor}, {7, maj},   {8, maj},   {11, dim}}; 
 
 //C Locrian     { C dim;  C♯ maj; D♯ min; F min;  F♯ maj; G♯ maj; A♯ min  }
-const chord locrian[7]    = {{0, dim},    {1, maj},   {3, minor}, {5, minor}, {6, maj},   {8, maj},   {10, minor}};
+const  chord locrian[7]    = {{0, dim},    {1, maj},   {3, minor}, {5, minor}, {6, maj},   {8, maj},   {10, minor}};
 
-const chord *all_chords[8] = {ionian, dorian, phrygian, lydian, mixolydian, aeolian, harmonic, locrian};
+const  chord *all_chords[8] = {ionian, dorian, phrygian, lydian, mixolydian, aeolian, harmonic, locrian};
+
 
 // Arrange the N elements of ARRAY in random order.  
 void shuffle(int *array, size_t n)
@@ -33,7 +40,7 @@ void shuffle(int *array, size_t n)
     if (n > 1) 
     {
         size_t i;
-        for (i = 0; i < n - 1; i++) 
+        for (i = 0; i < (n - 1); i++) 
         {
           size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
           int t = array[j];
@@ -45,13 +52,13 @@ void shuffle(int *array, size_t n)
 
 void arp::setupArp(short bn, short bo, short os, unsigned short st, unsigned int d, int m, unsigned imode)
 {
-  baseNote = (notes) map(bn, 0, 800, 0, 11);
-  baseOctave = (short) map(bo, 0, 800, 0, 7);
-  octaveShift = (short) map(os, 0, 800, 0, 7);
-  steps = (unsigned short) map(st, 0, 800, 1, 6);
-  indelay = (unsigned int) map(d, 0, 800, 0, 500);
-  mode = all_chords[(unsigned int) map(imode, 0, 800, 0, 8)];
-  order = (unsigned int) map(m, 0, 800, 0, 4);
+  baseNote = (notes) map(bn, 0, 1024, 11, 0);
+  baseOctave = (short) map(bo, 0, 1024, 7, 0);
+  octaveShift = (short) map(os, 0, 1024, 7, 0);
+  steps = (unsigned short) map(st, 0, 1024, 8, 1);
+  indelay = (unsigned int) map(d, 0, 1024, 0, 500);
+  mode = all_chords[(unsigned int) map(imode, 0, 1024, 0, 7)];
+  order = (unsigned int) map(m, 0, 1024, 0, 4);
 }
 
 int arp::setProgression(unsigned int p)
@@ -139,19 +146,9 @@ void arp::play()
     MIDI.sendNoteOn(bn, 127, 1);
     for (i=0; i<notes_added; i++)
     {
-        //Serial.print(notestoplay[i]); Serial.print("\r\n");
         MIDI.sendNoteOn(notestoplay[i], 127, 1);
 
-        #ifdef INT_SYNC
-        // Delay value from poti
         delay(indelay);
-        #endif
-
-        #ifdef EXT_SYNC
-        // Wait for click from sync in
-        while ((digitalRead(syncinpin) == 0));
-        delay(65);
-        #endif
         // Stop note
         MIDI.sendNoteOff(notestoplay[i], 0, 1);     // Stop the note
     }
