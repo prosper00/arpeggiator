@@ -24,3 +24,4 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - ADSR Envelope control?
 - Add an onboard amplifier & speaker
 - Create/upload schematics
+- STM32 port? (do I need more i/o's and processor power?)
