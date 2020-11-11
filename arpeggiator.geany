@@ -1,0 +1,49 @@
+[editor]
+line_wrapping=true
+line_break_column=72
+auto_continue_multiline=true
+
+[file_prefs]
+final_new_line=true
+ensure_convert_new_lines=false
+strip_trailing_spaces=false
+replace_tabs=false
+
+[indentation]
+indent_width=4
+indent_type=1
+indent_hard_tab_width=8
+detect_indent=false
+detect_indent_width=false
+indent_mode=2
+
+[project]
+name=arpeggiator.geany
+base_path=/home/bdroy/Arduino/arpeggiator/
+description=
+file_patterns=
+
+[long line marker]
+long_line_behaviour=1
+long_line_column=72
+
+[files]
+current_page=2
+FILE_NAME_0=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fbdroy%2FArduino%2Farpeggiator%2Fengine.cpp;0;4
+FILE_NAME_1=0;C++;0;EUTF-8;1;1;1;%2Fhome%2Fbdroy%2FArduino%2Farpeggiator%2Fengine.h;0;4
+FILE_NAME_2=0;Arduino;0;EUTF-8;0;1;1;%2Fhome%2Fbdroy%2FArduino%2Farpeggiator%2Farpeggiator.ino;0;2
+
+[VTE]
+last_dir=/home/bdroy
+
+[build-menu]
+ArduinoFT_00_LB=Verify
+ArduinoFT_00_CM=arduino-cli compile --fqbn LGT8fx\\ Boards:avr:328 -v
+ArduinoFT_00_WD=
+filetypes=Arduino;
+ArduinoFT_01_LB=Upload
+ArduinoFT_01_CM=arduino-cli compile --fqbn LGT8fx\\ Boards:avr:328 -v -p /dev/ttyACM0 -u
+ArduinoFT_01_WD=
+ArduinoFT_02_LB=Serial terminal
+ArduinoFT_02_CM=picocom $GEANY_ARDUINO_PORT
+ArduinoFT_02_WD=

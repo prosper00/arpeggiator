@@ -1,16 +1,10 @@
 #include "engine.h"
-
-/*#include <SoftwareSerial.h>
-SoftwareSerial softSerial(14,16);
-MIDI_CREATE_INSTANCE(SoftwareSerial, softSerial, MIDI);
-*/
-
 MIDI_CREATE_DEFAULT_INSTANCE();
 
-// C Ionian     { C maj;  D min;  E min;  F maj;  G maj;  A min;  B dim  }
+//C Ionian      { C maj;  D min;  E min;  F maj;  G maj;  A min;  B dim  }
 const chord ionian[7]     = {{0, maj},    {2, minor}, {4, minor}, {5, maj},   {7, maj},   {9, minor}, {11, dim}};
 
-// C Dorian     { C min;  D min;  D♯ maj; F maj;  G min;  A dim;  A♯ maj  }
+//C Dorian      { C min;  D min;  D♯ maj; F maj;  G min;  A dim;  A♯ maj  }
 const  chord dorian[7]     = {{0, minor},  {2, minor}, {3, maj},   {5, maj},   {7, minor}, {9, dim},   {10, maj}};
 
 //C Phrygian    { C min;  C♯ maj; D♯ maj; F min;  G dim;  G♯ maj; A♯ min  }
@@ -52,13 +46,15 @@ void shuffle(int *array, size_t n)
 
 void arp::setupArp(short bn, short bo, short os, unsigned short st, unsigned int d, int m, unsigned imode)
 {
-  baseNote = (notes) map(bn, 0, 1024, 11, 0);
-  baseOctave = (short) map(bo, 0, 1024, 7, 0);
-  octaveShift = (short) map(os, 0, 1024, 7, 0);
-  steps = (unsigned short) map(st, 0, 1024, 8, 1);
-  indelay = (unsigned int) map(d, 0, 1024, 0, 500);
-  mode = all_chords[(unsigned int) map(imode, 0, 1024, 0, 7)];
-  order = (unsigned int) map(m, 0, 1024, 0, 4);
+  baseNote =    (notes)            map(bn,    0, 1000, 11, 0);
+  baseOctave =  (short)            map(bo,    0, 1000, 7,  0);
+  octaveShift = (short)            map(os,    0, 1000, 7,  0);
+  steps =       (unsigned short)   map(st,    0, 1000, 8,  1);
+  indelay =     (unsigned int)     map(d,     0, 1000, 0,  500);
+  modenum =     (unsigned int)     map(imode, 0, 1000, 7,  0);
+  raw=imode;
+  mode = all_chords[modenum];
+  order =       (unsigned int)     map(m,     0, 1000, 0,  4);
 }
 
 int arp::setProgression(unsigned int p)
@@ -177,5 +173,4 @@ arp::arp()
  void arp::midibegin()
  {
    MIDI.begin(4);                      // Launch MIDI
-   //Serial.begin(57600);
  }
