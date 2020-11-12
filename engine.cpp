@@ -44,7 +44,7 @@ void shuffle(int *array, size_t n)
     }
 }
 
-void arp::setupArp(short bn, short bo, short os, unsigned short st, unsigned int d, int m, unsigned imode)
+void arp::setupArp()
 {
   baseNote =    (notes)            map(bn,    0, 1000, 11, 0);
   baseOctave =  (short)            map(bo,    0, 1000, 7,  0);
@@ -52,7 +52,6 @@ void arp::setupArp(short bn, short bo, short os, unsigned short st, unsigned int
   steps =       (unsigned short)   map(st,    0, 1000, 8,  1);
   indelay =     (unsigned int)     map(d,     0, 1000, 0,  500);
   modenum =     (unsigned int)     map(imode, 0, 1000, 7,  0);
-  raw=imode;
   mode = all_chords[modenum];
   order =       (unsigned int)     map(m,     0, 1000, 0,  4);
 }
