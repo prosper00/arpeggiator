@@ -2,8 +2,7 @@
 #include "engine.h"       //arpeggiator engine functions
 #include <U8x8lib.h>      //Needed to drive our OLED
 #include "lib/MIDI.h"         //Handle MIDI IO
-//#include "lib/NoodleSynth.h"  //For tone synthesis
-#include "the_synth/synth.h"
+#include "lib/synth.h"
 #include "arpeggiator.h"  //Our defines, globals, macros, etc.
 
 void setup()
