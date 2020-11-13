@@ -10,7 +10,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - tweaked some preferences and pin assignments
 - modified for use with an LGT8F328p LQFP32 board (but should work with a Nano as well). 
 - Added support for an OLED display (courtesty of the superb u8g2 library: https://github.com/olikraus/u8g2/wiki)
-- ADC tweaks to speed up reading the POTS (specific to the LGT8F which has a more advanced ADC than the Atmel)
+- ADC tweaks to speed up reading the POTS - handle this task asynchronously in an interrupt.
 - Required libraries: TimeOne by Paul Stoffregen // MIDI Library by Forty Seven Effects // u8g2 by olikraus
 - Eliminate the use of TimerOne (we'll need the timer1 peripheral for our synth):
 - Setup the ADC for continuous operation, and generate an interrupt each time it samples a value. Also use this same ISR to read our buttons.

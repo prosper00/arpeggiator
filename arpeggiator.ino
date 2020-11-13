@@ -16,7 +16,7 @@ void setup()
   digitalWrite(OLEDSDA,0);
   digitalWrite(OLEDSCA,0);
 
-  setupADC();
+  setupADC(); //initialize ADC and scan the pots and buttons
 
 //Initialize libraries
   a.midibegin();
@@ -105,7 +105,6 @@ void updateDisplay(){
 
 void setupADC(){
 //Initialize ADC peripheral
-
   noInterrupts();
   ADCSRA = ((0 << ADPS0) | (1 << ADPS1) | (1 << ADPS2));   // set prescaler to 64 - Any lower, and we get garbage back. Why? Datasheet (1.0.5-English, pp281) for the LGT indicates we can run the ADC clock up to 3MHz (so, should work at a prescaler of 16 = 2MHz):
   /*Prescaling and Conversion Timing
@@ -118,7 +117,6 @@ void setupADC(){
   ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
   ADCSRA |= ((1 << ADEN) | (1 << ADIE) | (1 << ADATE)); //Turn on ADC, Enable interrupts, enable automatic triggering
   ADCSRA |= (1 << ADSC); //start conversion
-  // ADCSRC |= (1 << SPD);
   interrupts();
 }
 
@@ -157,8 +155,8 @@ ISR(ADC_vect){
           }
         }
         a.m = ADC>>6;
-        ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC, need to re-enable 
-                                 * it in loop() next time we want to scan the pots */
+        ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC. We need to re-enable 
+                                 * it via setupADC() next time we want to scan the pots */
         break;
     }
 }
