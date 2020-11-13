@@ -1,13 +1,11 @@
-#include <TimerOne.h>     //Needed to call our interrupt timer every n seconds
 #include "engine.h"       //arpeggiator engine functions
 #include <U8x8lib.h>      //Needed to drive our OLED
-#include "lib/MIDI.h"         //Handle MIDI IO
-#include "lib/synth.h"
+//#include "lib/MIDI.h"     //Handle MIDI IO
+//#include "lib/synth.h"    //Our synthesizer module
 #include "arpeggiator.h"  //Our defines, globals, macros, etc.
 
 void setup()
 {
-  noInterrupts();
 //Initialize GPIOs  
   pinMode(LEDPin,  OUTPUT);
   for(int i=0; i<7; i++){
@@ -24,9 +22,6 @@ void setup()
   a.midibegin();
   u8x8.begin();
   u8x8.setPowerSave(0);
-  Timer1.initialize(100000);          // initialize timer1
-  Timer1.attachInterrupt(readPoties); // We will read potis and buttons values within timer interrupt
-  interrupts();
 }
 
 void loop()
@@ -40,7 +35,15 @@ void loop()
       a.play();
       digitalWrite(LEDPin, LOW);
     }
-    updateDisplay();
+
+    time_last = time_now;
+    time_now = millis();
+    unsigned long time_since = time_now - time_last;
+    if(time_since > 20){
+      a.setupArp();
+      updateDisplay();
+      setupADC(); //Scan pot values again.
+    }
 }
 
 void updateDisplay(){
@@ -55,7 +58,7 @@ void updateDisplay(){
   u8x8.drawString(5,3,buff);
   
   u8x8.setCursor(6,1);
-  switch(a.modenum){
+  switch(a.modenum){    //write out the currently selected mode
     case 0:
       u8x8.print(F("ionian    "));
       u8x8.setCursor(0,2);
@@ -100,38 +103,22 @@ void updateDisplay(){
   u8x8.refreshDisplay();
 }
 
-void readPoties(){
-    a.setupArp();
-}
-
 void setupADC(){
-//Initialize LGT8F ADC peripheral
+//Initialize ADC peripheral
 
-/******* YOU PROBABLY SHOULDN'T DO THIS IF YOURE USING AN ATMEL CHIP INSTEAD OF THE LGT8F*******/
-/******* ATMEGA may not work well with ADC clock > 1MHz, and we're using 4MHz            *******/
-/******* for 1MHz, use ADCSRA = ((1 << ADPS2) | (0 << ADPS1) | (0 << ADPS0));            *******/
-
-/*see:
- * https://sites.google.com/site/qeewiki/books/avr-guide/analog-input
- * https://arduino.stackexchange.com/questions/45927/arduino-continuously-reading-adc-value-using-interrupt
- * https://bennthomsen.wordpress.com/arduino/peripherals/continuous-adc-capture/
- */ 
-
-  /* *** Datasheet: ***
-   * By default, the successive approximation circuitry requires an input clock frequency between 
-   * 300kHz and 3MHz to get maximum resolution. If a lower conversion accurancy than 12 bits is 
-   * needed, the input clock frequency to the ADC can be higher than 3MHz to get a higher sample rate.
-   */
-  /* Let's go for 4Mhz and see if that works, b/c no div is available to give 3Mhz, and we don't need much accuracy
-   * set ADC prescale to 4-(0b010), and speed up ADC clock to F_CPU/4
-   */
-  ADCSRA = ((0 << ADEN) | (0 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)); //ADC conversion clock frequency divider to 8. ADC Clock  32MHz/8 = 4MHz
-  DIDR0 = 0xFF; //Disable digital input registers on analogue inputs A0-7
-  ADMUX = ((1 << REFS0) | (1 << ADLAR));   // Set Voltage reference to Avcc (5v), Left adjust converted value
-  ADMUX = ((1 << ADTS0) | (1 << ADTS2));   // initialize the muxer to pin A0
-  ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running. 15 ADC clock cycles per converson ADC sample rate 4000kHz/15 = 266kS/s / 3.75us (or 22.5us for all 6 pots)
-  ADCSRA |= ((1 << ADEN) | (1 << ADIE) | (1 << ADATE)); //Turn on ADC, Enable interrupts, enable automatic triggering (ADIF?)
+  noInterrupts();
+  ADCSRA = ((0 << ADPS0) | (1 << ADPS1) | (1 << ADPS2));   // set prescaler to 64 - Any lower, and we get garbage back. Why? Datasheet (1.0.5-English, pp281) for the LGT indicates we can run the ADC clock up to 3MHz (so, should work at a prescaler of 16 = 2MHz):
+  /*Prescaling and Conversion Timing
+   *  By default, the successive approximation circuitry requires an input clock frequency between 300kHz and
+   *  3MHz to get maximum resolution. If a lower conversion accurancy than 12 bits is needed, the input clock
+   *  frequency to the ADC can be higher than 3MHz to get a higher sample rate.*/
+   
+  ADMUX = (0 | (1<<REFS0) | 1<<ADLAR);   // Set Voltage reference to Avcc (5v), starting at A0, left-aligned.
+  DIDR0 = 0x1F; //Disable digital input registers on analog inputs A0-A5 
+  ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
+  ADCSRA |= ((1 << ADEN) | (1 << ADIE) | (1 << ADATE)); //Turn on ADC, Enable interrupts, enable automatic triggering
   ADCSRA |= (1 << ADSC); //start conversion
+  interrupts();
 }
 
 ISR(ADC_vect){
@@ -139,32 +126,28 @@ ISR(ADC_vect){
 
     tmp = ADMUX;            // read the value of ADMUX register
     tmp &= 0x0F;            // AND the first 4 bits (value of ADC pin being used) 
-
-    ADCvalue = ADCH;        // read the sensor value
-
     ADMUX++;                // add 1 to ADMUX to read the next pin next time
-    switch(tmp){
+
+    switch(tmp){  //Update the raw value of the pot that we just read
       case 0: //octaveShift
-        a.os = ADCvalue;
+        a.os = ADC>>6; //>>6 means we only keep 10-bits of data. For atmega compatibility. 
         break;
       case 1: //baseNote
-        a.bn = ADCvalue;
+        a.bn = ADC>>6;
         break;
       case 2: //indelay
-        a.d = ADCvalue;
+        a.d = ADC>>6;
         break;
       case 3: //steps
-        a.st = ADCvalue;
+        a.st = ADC>>6;
         break;
       case 4: //baseOctave
-        a.bo = ADCvalue;
+        a.bo = ADC>>6;
         break;
       case 5: //mode
-        a.imode = ADCvalue;
+        a.imode = ADC>>6;
         break;
       case 6: //order
-        a.m = ADCvalue;
-        ADMUX&= 0xF8;      // clear the last 4 bits to reset the mux to ADC0
         for(int i = 0; i<7; i++){ // read out our buttons
           if (!(digitalRead(buttons[i]))){
             button_pressed = true;
@@ -172,7 +155,9 @@ ISR(ADC_vect){
             break;
           }
         }
+        a.m = ADC>>6;
+        ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC, need to re-enable 
+                                 * it in loop() next time we want to scan the pots */
         break;
     }
-    ADCSRA &= ~(1 << ADEN); //why?
 }

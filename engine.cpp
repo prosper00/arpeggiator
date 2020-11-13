@@ -46,14 +46,14 @@ void shuffle(int *array, size_t n)
 
 void arp::setupArp()
 {
-  baseNote =    (notes)            map(bn,    0, 1000, 11, 0);
-  baseOctave =  (short)            map(bo,    0, 1000, 7,  0);
-  octaveShift = (short)            map(os,    0, 1000, 7,  0);
-  steps =       (unsigned short)   map(st,    0, 1000, 8,  1);
-  indelay =     (unsigned int)     map(d,     0, 1000, 0,  500);
-  modenum =     (unsigned int)     map(imode, 0, 1000, 7,  0);
+  baseNote =    (notes)            map(bn,    0, 1020, 11, 0);
+  baseOctave =  (short)            map(bo,    0, 1020, 7,  0);
+  octaveShift = (short)            map(os,    0, 1020, 7,  0);
+  steps =       (unsigned short)   map(st,    0, 1020, 8,  1);
+  indelay =     (unsigned int)     map(d,     0, 1020, 0,  500);
+  modenum =     (unsigned int)     map(imode, 0, 1020, 7,  0);
   mode = all_chords[modenum];
-  order =       (unsigned int)     map(m,     0, 1000, 0,  4);
+  order =       (unsigned int)     map(m,     0, 1020, 0,  4);
 }
 
 int arp::setProgression(unsigned int p)
