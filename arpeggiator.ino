@@ -105,48 +105,41 @@ void updateDisplay(){
 
 void setupADC(){
 //Initialize ADC peripheral
-  noInterrupts();
-  ADCSRA = ((0 << ADPS0) | (1 << ADPS1) | (1 << ADPS2));   // set prescaler to 64 - Any lower, and we get garbage back. Why? Datasheet (1.0.5-English, pp281) for the LGT indicates we can run the ADC clock up to 3MHz (so, should work at a prescaler of 16 = 2MHz):
-  /*Prescaling and Conversion Timing
-   *  By default, the successive approximation circuitry requires an input clock frequency between 300kHz and
-   *  3MHz to get maximum resolution. If a lower conversion accurancy than 12 bits is needed, the input clock
-   *  frequency to the ADC can be higher than 3MHz to get a higher sample rate.*/
-   
+  ADCSRA = ((1 << ADPS0) | (1 << ADPS1) | (0 << ADPS2));   // set prescaler to 8 
   ADMUX = (0 | (1<<REFS0) | 1<<ADLAR);   // Set Voltage reference to Avcc (5v), starting at A0, left-aligned.
   DIDR0 = 0x1F; //Disable digital input registers on analog inputs A0-A5 
   ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
   ADCSRA |= ((1 << ADEN) | (1 << ADIE) | (1 << ADATE)); //Turn on ADC, Enable interrupts, enable automatic triggering
+//  ADCSRA |= ((1 << ADEN) | (1 << ADIE) ); //Turn on ADC, Enable interrupts
   ADCSRA |= (1 << ADSC); //start conversion
-  interrupts();
 }
 
 ISR(ADC_vect){
     uint8_t tmp;            // temp register for storage of misc data
-
-    tmp = ADMUX;            // read the value of ADMUX register
+#warning FIXME: ADMUX-1 works when ADC prescaler <64, but when >=64, we need to use ADMUX
+    tmp = ADMUX-1;          // read the value of ADMUX register
     tmp &= 0x0F;            // AND the first 4 bits (value of ADC pin being used) 
-    ADMUX++;                // add 1 to ADMUX to read the next pin next time
 
     switch(tmp){  //Update the raw value of the pot that we just read
-      case 0: //octaveShift
+      case octaveShiftpin:
         a.os = ADC>>6; //>>6 means we only keep 10-bits of data. For atmega compatibility. 
         break;
-      case 1: //baseNote
+      case baseNotepin:
         a.bn = ADC>>6;
         break;
-      case 2: //indelay
+      case indelaypin:
         a.d = ADC>>6;
         break;
-      case 3: //steps
+      case stepspin:
         a.st = ADC>>6;
         break;
-      case 4: //baseOctave
+      case baseOctavepin:
         a.bo = ADC>>6;
         break;
-      case 5: //mode
+      case modepin:
         a.imode = ADC>>6;
         break;
-      case 6: //order
+      case orderpin:
         for(int i = 0; i<7; i++){ // read out our buttons
           if (!(digitalRead(buttons[i]))){
             button_pressed = true;
@@ -157,6 +150,8 @@ ISR(ADC_vect){
         a.m = ADC>>6;
         ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC. We need to re-enable 
                                  * it via setupADC() next time we want to scan the pots */
-        break;
+        return;
     }
+    ADMUX++;                  // add 1 to ADMUX to read the next pin next time
+//    ADCSRA |= (1 << ADSC);  // start next conversion
 }
