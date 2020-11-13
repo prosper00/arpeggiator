@@ -118,6 +118,7 @@ void setupADC(){
   ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
   ADCSRA |= ((1 << ADEN) | (1 << ADIE) | (1 << ADATE)); //Turn on ADC, Enable interrupts, enable automatic triggering
   ADCSRA |= (1 << ADSC); //start conversion
+  // ADCSRC |= (1 << SPD);
   interrupts();
 }
 

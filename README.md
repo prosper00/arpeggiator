@@ -12,11 +12,11 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Added support for an OLED display (courtesty of the superb u8g2 library: https://github.com/olikraus/u8g2/wiki)
 - ADC tweaks to speed up reading the POTS (specific to the LGT8F which has a more advanced ADC than the Atmel)
 - Required libraries: TimeOne by Paul Stoffregen // MIDI Library by Forty Seven Effects // u8g2 by olikraus
+- Eliminate the use of TimerOne (we'll need the timer1 peripheral for our synth):
+- Setup the ADC for continuous operation, and generate an interrupt each time it samples a value. Also use this same ISR to read our buttons.
 
 ## Todo:
 - Make the code and library non-blocking, timer/state machine based (remove the use of delay() )
-- Eliminate the use of TimerOne (we'll need the timer1 peripheral for our synth):
- -  Setup the ADC for continuous operation, and generate an interrupt each time it samples a value. Also use this same ISR to read our buttons.
 - Polyphonic output options... incorporate up to ~4 simultaneous voices
 - Implement an on-board synthesizer to generate our own tones (thinking of ripping off https://github.com/dzlonline/the_synth )
 - Add an onboard amplifier & speaker
