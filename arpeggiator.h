@@ -32,3 +32,7 @@
 	volatile int ButtonVal = 1;
 	U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(OLEDSCA, OLEDSDA);
 	unsigned long time_last = 0, time_now = 0;
+
+//Helper Macros
+#define sbi(var, mask)	((var) |= (uint8_t)(1 << (mask)))
+#define cbi(var, mask)	((var) &= (uint8_t)~(1 << (mask)))

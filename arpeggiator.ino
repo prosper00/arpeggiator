@@ -1,7 +1,7 @@
+#include "lib/MIDI.h"     //Handle MIDI IO
 #include "engine.h"       //arpeggiator engine functions
 #include <U8x8lib.h>      //Needed to drive our OLED
-//#include "lib/MIDI.h"     //Handle MIDI IO
-//#include "lib/synth.h"    //Our synthesizer module
+#include "lib/synth.h"    //Our synthesizer module
 #include "arpeggiator.h"  //Our defines, globals, macros, etc.
 
 void setup()
@@ -16,7 +16,7 @@ void setup()
   digitalWrite(OLEDSDA,0);
   digitalWrite(OLEDSCA,0);
 
-  setupADC(); //initialize ADC and scan the pots and buttons
+  scanPots(); //initialize ADC and scan the pots and buttons
 
 //Initialize libraries
   a.midibegin();
@@ -39,10 +39,10 @@ void loop()
     time_last = time_now;
     time_now = millis();
     unsigned long time_since = time_now - time_last;
-    if(time_since > 20){
+    if(time_since > 20){ //do this every 20ms
       a.setupArp();
       updateDisplay();
-      setupADC(); //Scan pot values again.
+      scanPots(); //Scan pot values again.
     }
 }
 
@@ -103,42 +103,56 @@ void updateDisplay(){
   u8x8.refreshDisplay();
 }
 
-void setupADC(){
-//Initialize ADC peripheral
-  ADCSRA = ((1 << ADPS0) | (1 << ADPS1) | (0 << ADPS2));   // set prescaler to 8 
+void scanPots(){
+//Initialize ADC peripheral, and scan all 7 channels
+/* ***************************************************************************************************************
+ * We're setting up the ADC with a prescaler of 8. This gives us a clock of 4MHz on a 32MHz LGT8F chip.
+ * According to the datasheet, up to 3MHz is OK for full resolution, but we're only using 10 bits, so
+ * the slightly faster rate seems to work OK. Might not work well on an ATmega, but, setting a prescaler of 
+ * 32 shouldn't break anything.
+ * 
+ * At a prescaler value of 8, we get:
+ * ADCLK=F_CPU/8 = 4MHz
+ * 15 cycles per conversion, = 267k conversions/second (each conversion = 1 interrupt)
+ * 267k conversions / 7 potentiometers = 38095 scans per second
+ * 1/38095 = 26.25us to scan all 7 pots.
+ * 
+ * After scanning all 7 pots, we disable the ADC so that it's not generating unnecessary interrupts
+ * Don't forget to re-enable it next time you want to scan the pots (easiest way is to call setupADC() again
+ ******************************************************************************************************************/
+
+  ADCSRA = ((1 << ADPS0) | (1 << ADPS1) | (0 << ADPS2));   // prescaler to 8. Might need a bigger value on atmega
   ADMUX = (0 | (1<<REFS0) | 1<<ADLAR);   // Set Voltage reference to Avcc (5v), starting at A0, left-aligned.
   DIDR0 = 0x1F; //Disable digital input registers on analog inputs A0-A5 
   ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
   ADCSRA |= ((1 << ADEN) | (1 << ADIE) | (1 << ADATE)); //Turn on ADC, Enable interrupts, enable automatic triggering
-//  ADCSRA |= ((1 << ADEN) | (1 << ADIE) ); //Turn on ADC, Enable interrupts
   ADCSRA |= (1 << ADSC); //start conversion
 }
 
 ISR(ADC_vect){
-    uint8_t tmp;            // temp register for storage of misc data
-#warning FIXME: ADMUX-1 works when ADC prescaler <64, but when >=64, we need to use ADMUX
-    tmp = ADMUX-1;          // read the value of ADMUX register
+    uint8_t tmp;
+    tmp = ADMUX-1;          // read the value of previous ADMUX register
     tmp &= 0x0F;            // AND the first 4 bits (value of ADC pin being used) 
-
+    ADMUX++;                // add 1 to ADMUX to read the next pin next time
     switch(tmp){  //Update the raw value of the pot that we just read
       case octaveShiftpin:
         a.os = ADC>>6; //>>6 means we only keep 10-bits of data. For atmega compatibility. 
-        break;
+        return;
       case baseNotepin:
         a.bn = ADC>>6;
-        break;
+        return;
       case indelaypin:
         a.d = ADC>>6;
-        break;
+        return;
       case stepspin:
         a.st = ADC>>6;
-        break;
+        return;
       case baseOctavepin:
         a.bo = ADC>>6;
-        break;
+        return;
       case modepin:
         a.imode = ADC>>6;
-        break;
+        return;
       case orderpin:
         for(int i = 0; i<7; i++){ // read out our buttons
           if (!(digitalRead(buttons[i]))){
@@ -149,9 +163,7 @@ ISR(ADC_vect){
         }
         a.m = ADC>>6;
         ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC. We need to re-enable 
-                                 * it via setupADC() next time we want to scan the pots */
+                                 * it via scanPots() next time we want to scan the pots */
         return;
     }
-    ADMUX++;                  // add 1 to ADMUX to read the next pin next time
-//    ADCSRA |= (1 << ADSC);  // start next conversion
 }
