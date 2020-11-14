@@ -117,11 +117,13 @@ void scanPots(){
  * 267k conversions / 7 potentiometers = 38095 scans per second
  * 1/38095 = 26.25us to scan all 7 pots.
  * 
+ * At a prescaler of 32, we'd take 4 times as long to read the pots, but should be more stable on atmegas
+ * 
  * After scanning all 7 pots, we disable the ADC so that it's not generating unnecessary interrupts
  * Don't forget to re-enable it next time you want to scan the pots (easiest way is to call setupADC() again
  ******************************************************************************************************************/
 
-  ADCSRA = ((1 << ADPS0) | (1 << ADPS1) | (0 << ADPS2));   // prescaler to 8. Might need a bigger value on atmega
+  ADCSRA = ((1 << ADPS0) | (0 << ADPS1) | (1 << ADPS2));   // prescaler to 32.
   ADMUX = (0 | (1<<REFS0) | 1<<ADLAR);   // Set Voltage reference to Avcc (5v), starting at A0, left-aligned.
   DIDR0 = 0x1F; //Disable digital input registers on analog inputs A0-A5 
   ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
@@ -154,16 +156,16 @@ ISR(ADC_vect){
         a.imode = ADC>>6;
         return;
       case orderpin:
+        a.m = ADC>>6;
+        ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC. We need to re-enable 
+                                 * it via scanPots() next time we want to scan the pots */
         for(int i = 0; i<7; i++){ // read out our buttons
           if (!(digitalRead(buttons[i]))){
             button_pressed = true;
             ButtonVal = i+1;
-            break;
+            return;
           }
         }
-        a.m = ADC>>6;
-        ADCSRA &= ~(1 << ADEN); /* We've read all pots. Disable ADC. We need to re-enable 
-                                 * it via scanPots() next time we want to scan the pots */
         return;
     }
 }
