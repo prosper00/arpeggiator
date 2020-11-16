@@ -2,6 +2,7 @@
 Arduino MIDI arpeggiator, based on original work found here: https://github.com/raszhivin/arpeggiator
 
 ![Prototype](20201110_152001.jpg?raw=true "Prototype")
+![Prototype Back](20201114_165149.jpg?raw=true "Back Side")
 
 
 ## Done:
