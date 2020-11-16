@@ -1,4 +1,5 @@
 #include "engine.h"
+
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 //C Ionian      { C maj;  D min;  E min;  F maj;  G maj;  A min;  B dim  }
@@ -44,18 +45,17 @@ void shuffle(int *array, size_t n)
     }
 }
 
-void arp::setupArp()
-{
-  baseNote =    (notes)            map(bn,    0, 1020, 11, 0);
-  baseOctave =  (short)            map(bo,    0, 1020, 7,  0);
-  octaveShift = (short)            map(os,    0, 1020, 7,  0);
-  steps =       (unsigned short)   map(st,    0, 1020, 8,  1);
-  indelay =     (unsigned int)     map(d,     0, 1020, 0,  500);
-  modenum =     (unsigned int)     map(imode, 0, 1020, 7,  0);
-  mode = all_chords[modenum];
-  order =       (unsigned int)     map(m,     0, 1020, 0,  4);
+void arp::updateArp(uint8_t baseNoteVal,uint8_t baseOctaveVal,uint8_t octaveShiftVal,uint8_t stepsVal,uint16_t indelayVal,uint8_t modenumVal,uint8_t orderVal){
+	baseNote    = (notes)baseNoteVal;
+	baseOctave  = (short)baseOctaveVal;
+	octaveShift = (short)octaveShiftVal;
+	steps       = (unsigned short)stepsVal;
+	indelay     = (unsigned int)indelayVal;
+	order       = (int)orderVal;
+	mode        = all_chords[modenumVal];
+	modenum		= modenumVal;
 }
-
+	
 int arp::setProgression(unsigned int p)
 {
     if (p<8)
@@ -150,12 +150,6 @@ void arp::play()
 
     //Stop base note
     MIDI.sendNoteOff(bn, 0, 1);
-}
-
-arp::arp(notes bn, short bo, short os, unsigned short st, unsigned int d, unsigned m, unsigned int p) : baseNote(bn), baseOctave(bo), octaveShift(os), steps(st), indelay(d), progression(p)
-{
-  order = 0;
-  mode = all_chords[m];
 }
 
 arp::arp()

@@ -9,22 +9,21 @@ typedef struct {
 
 class arp {
 private:
+    notes baseNote;
+    short baseOctave;
+    short octaveShift;
+    unsigned short steps;
+    unsigned int indelay;
+    unsigned int progression;
+    chord *mode;
+    int order;
 public:
     arp();
-    arp(notes bn, short bo, short os, unsigned short st, unsigned int d, unsigned m, unsigned int p);
-    void setupArp();
     int  setProgression(unsigned int p);
     void play();
+	void updateArp(uint8_t baseNoteVal,uint8_t baseOctaveVal,uint8_t octaveShiftVal,uint8_t stepsVal,uint16_t indelayVal,uint8_t modenumVal,uint8_t orderVal);
     void midibegin();
-    //raw pot values:
-        volatile unsigned int bn, bo, os, st, d, m, imode;
-    //parsed pot values:
-		unsigned int modenum, indelay, progression; 
-		short baseOctave, octaveShift;
-		unsigned short steps;
-		int order;
-		notes baseNote;
-		chord *mode;
+    uint8_t modenum;
 };
 
 int* createChord(notes root, chord_types i, int *notes_array, unsigned short *sh1, unsigned short *sh2);
