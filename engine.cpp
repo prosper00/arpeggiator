@@ -1,3 +1,5 @@
+//#include "lib/synth.h"    //Our synthesizer module
+#include "lib/MIDI.h"
 #include "engine.h"
 
 MIDI_CREATE_DEFAULT_INSTANCE();
@@ -163,7 +165,13 @@ arp::arp()
     progression = 0;
     mode = ionian;
 }
- void arp::midibegin()
- {
-   MIDI.begin(4);                      // Launch MIDI
- }
+
+void arp::midibegin()
+{
+  MIDI.begin(4);                      // Launch MIDI
+}
+
+void arp::synthbegin()
+{
+	//nanosynth.begin();
+}

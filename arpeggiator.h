@@ -20,17 +20,17 @@
 			12 // sixth button. D12
 		};
 		#define OLEDSDA        D4
-		#define OLEDSCA        D3 // ***fixme:need to move to D2***
+		#define OLEDSCA        D2
 		#define OUT            D3 //    pin CHB=D3 for Synth output
 		#define LEDPin         5
 
 //Globals
 	arp a;
-	volatile bool button_pressed = 0;
-	volatile int ButtonVal = 1;
 	U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(OLEDSCA, OLEDSDA);
 	unsigned long time_last = 0;
 	volatile uint8_t pots[7]; //raw pot values:
+	volatile bool button_pressed = 0;
+	volatile int ButtonVal = 1;
 
 //Helper Macros
 #define sbi(var, mask)	((var) |= (uint8_t)(1 << (mask)))

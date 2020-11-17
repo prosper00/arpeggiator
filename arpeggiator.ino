@@ -1,7 +1,5 @@
-#include "lib/MIDI.h"     //Handle MIDI IO
 #include "engine.h"       //arpeggiator engine functions
 #include <U8x8lib.h>      //Needed to drive our OLED
-#include "lib/synth.h"    //Our synthesizer module
 #include "arpeggiator.h"  //Our defines, globals, macros, etc.
 
 void setup()
@@ -11,7 +9,8 @@ void setup()
   for(int i=0; i<7; i++){
     pinMode(buttons[i], INPUT_PULLUP);
   }
-  pinMode(D2, OUTPUT); //debug
+  pinMode(D3, OUTPUT);
+  digitalWrite(D3,LOW);
   pinMode(OLEDSDA, OUTPUT);
   pinMode(OLEDSCA, OUTPUT);
   digitalWrite(OLEDSDA,0);
@@ -144,7 +143,7 @@ void mapPots(){
   uint8_t  baseOctave  = MAP(pots[baseOctavepin],  0, 252, 7,  0);
   uint8_t  octaveShift = MAP(pots[octaveShiftpin], 0, 252, 7,  0);
   uint8_t  steps       = MAP(pots[stepspin],       0, 252, 8,  1);
-  uint16_t indelay     = MAP(pots[indelaypin],     0, 252, 0,  500);
+  uint16_t indelay     = pots[indelaypin] * 2;
   uint8_t  modenum     = MAP(pots[modepin],        0, 252, 7,  0);
   uint8_t  order       = MAP(pots[orderpin],       0, 252, 0,  4);
   

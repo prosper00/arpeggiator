@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _SYNTH
 #define _SYNTH
 //*************************************************************************************
@@ -27,7 +28,7 @@
 #define ENVELOPE2 2
 #define ENVELOPE3 3
 
-#define FS 20000.0                                              //-Sample rate (NOTE: must match tables.h)
+#define FS 20000.0	//-Sample rate (NOTE: must match tables.h)
 
 #define SET(x,y) (x |=(1<<y))		        		//-Bit set/clear macros
 #define CLR(x,y) (x &= (~(1<<y)))       			// |
