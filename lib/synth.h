@@ -35,26 +35,26 @@
 #define CHK(x,y) (x & (1<<y))           			// |
 #define TOG(x,y) (x^=(1<<y))            			//-+
 
-volatile unsigned int PCW[4] = {
+ volatile unsigned int PCW[4] = {
   0, 0, 0, 0};			//-Wave phase accumolators
-volatile unsigned int FTW[4] = {
+ volatile unsigned int FTW[4] = {
   1000, 200, 300, 400};           //-Wave frequency tuning words
-volatile unsigned char AMP[4] = {
+ volatile unsigned char AMP[4] = {
   255, 255, 255, 255};           //-Wave amplitudes [0-255]
-volatile unsigned int PITCH[4] = {
+ volatile unsigned int PITCH[4] = {
   500, 500, 500, 500};          //-Voice pitch
-volatile int MOD[4] = {
+ volatile int MOD[4] = {
   20, 0, 64, 127};                         //-Voice envelope modulation [0-1023 512=no mod. <512 pitch down >512 pitch up]
-volatile unsigned int wavs[4];                                  //-Wave table selector [address of wave in memory]
-volatile unsigned int envs[4];                                  //-Envelopte selector [address of envelope in memory]
-volatile unsigned int EPCW[4] = {
+ volatile unsigned int wavs[4];                                  //-Wave table selector [address of wave in memory]
+ volatile unsigned int envs[4];                                  //-Envelopte selector [address of envelope in memory]
+ volatile unsigned int EPCW[4] = {
   0x8000, 0x8000, 0x8000, 0x8000}; //-Envelope phase accumolator
-volatile unsigned int EFTW[4] = {
+ volatile unsigned int EFTW[4] = {
   10, 10, 10, 10};               //-Envelope speed tuning word
-volatile unsigned char divider = 4;                             //-Sample rate decimator for envelope
-volatile unsigned int tim = 0;
-volatile unsigned char tik = 0;
-volatile unsigned char output_mode;
+ volatile unsigned char divider = 4;                             //-Sample rate decimator for envelope
+ volatile unsigned int tim = 0;
+ volatile unsigned char tik = 0;
+ volatile unsigned char output_mode;
 
 
 //*********************************************************************************************

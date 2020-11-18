@@ -1,8 +1,9 @@
-//#include "lib/synth.h"    //Our synthesizer module
-#include "lib/MIDI.h"
 #include "engine.h"
+#include "lib/synth.h"
+//#include <MIDI.h>
 
-MIDI_CREATE_DEFAULT_INSTANCE();
+//MIDI_CREATE_DEFAULT_INSTANCE();
+synth nanosynth;
 
 //C Ionian      { C maj;  D min;  E min;  F maj;  G maj;  A min;  B dim  }
 const chord ionian[7]     = {{0, maj},    {2, minor}, {4, minor}, {5, maj},   {7, maj},   {9, minor}, {11, dim}};
@@ -139,19 +140,24 @@ void arp::play()
 
     if (order==3)
       shuffle(notestoplay, notes_added);
-    //Serial.print(bn); Serial.print("\r\n");
-    MIDI.sendNoteOn(bn, 127, 1);
+    //MIDI.sendNoteOn(bn, 127, 1);
+    nanosynth.setLength(0,indelay*notes_added);
+    nanosynth.mTrigger(0,bn);
     for (i=0; i<notes_added; i++)
     {
-        MIDI.sendNoteOn(notestoplay[i], 127, 1);
+        //MIDI.sendNoteOn(notestoplay[i], 127, 1);
+        nanosynth.setLength(1,indelay*.7);
+        nanosynth.mTrigger(1,notestoplay[i]);
+        //tone(3,notestoplay[i]);
 
         delay(indelay);
+        //noTone(3);
         // Stop note
-        MIDI.sendNoteOff(notestoplay[i], 0, 1);     // Stop the note
+        //MIDI.sendNoteOff(notestoplay[i], 0, 1);     // Stop the note
     }
 
     //Stop base note
-    MIDI.sendNoteOff(bn, 0, 1);
+    //MIDI.sendNoteOff(bn, 0, 1);
 }
 
 arp::arp()
@@ -168,10 +174,14 @@ arp::arp()
 
 void arp::midibegin()
 {
-  MIDI.begin(4);                      // Launch MIDI
+	//MIDI.begin(4);                      // Launch MIDI
 }
 
 void arp::synthbegin()
 {
-	//nanosynth.begin();
+	nanosynth.begin(CHB);
+	
+	//voice[0-3],wave[0-6],pitch[0-127],envelope[0-4],length[0-127],mod[0-127:64=no mod]
+	nanosynth.setupVoice(0,TRIANGLE,30,ENVELOPE0,80,64);
+	nanosynth.setupVoice(1,TRIANGLE,31,ENVELOPE0,100,64);
 }

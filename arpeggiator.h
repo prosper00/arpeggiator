@@ -21,7 +21,7 @@
 		};
 		#define OLEDSDA        D4
 		#define OLEDSCA        D2
-		#define AUDIOOUT       D3 //    pin CHB=D3 for Synth output
+		#define AUDIOOUT       CHB //    pin CHB=D3 for Synth output
 		#define LEDPin         5
 
 //Globals

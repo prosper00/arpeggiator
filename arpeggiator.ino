@@ -9,8 +9,6 @@ void setup()
   for(int i=0; i<7; i++){
     pinMode(buttons[i], INPUT_PULLUP);
   }
-  pinMode(AUDIOOUT, OUTPUT);
-  digitalWrite(AUDIOOUT, LOW);
   pinMode(OLEDSDA, OUTPUT);
   pinMode(OLEDSCA, OUTPUT);
   digitalWrite(OLEDSDA,0);
@@ -21,6 +19,7 @@ void setup()
 
 //Initialize libraries
   a.midibegin();
+  a.synthbegin();
   u8x8.begin();
   u8x8.setPowerSave(0);
   
@@ -36,7 +35,7 @@ void loop()
   unsigned long time_now = millis();
   if((time_now - time_last) > 400){ //do this every 200ms
     time_last = time_now;
-    updateDisplay(); //this takes 80ms :(
+    //updateDisplay(); //this takes 80ms :(
   }
   
   if (button_pressed)
@@ -171,7 +170,7 @@ ISR(ADC_vect){
 
 // This interrupt is called once a millisecond.
 ISR(TIMER0_COMPA_vect){
-  static uint8_t interval=0;
+  static uint16_t interval=0;
   interval++;
   if(interval>=100){  //every hundredth time here, do this:
     interval=0;

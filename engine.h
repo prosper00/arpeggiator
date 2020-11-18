@@ -1,3 +1,5 @@
+#include "Arduino.h"
+
 typedef enum {C, CD, D, DD, E, F, FD, G, GD, A, AD, B} notes;
 typedef enum {maj, minor, dim, aug} chord_types;
 
@@ -28,5 +30,4 @@ public:
 
 int* createChord(notes root, chord_types i, int *notes_array, unsigned short *sh1, unsigned short *sh2);
 short midiByNote (notes note, short octave);
-//synth nanosynth;
 
