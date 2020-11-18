@@ -3,7 +3,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 
 ![Prototype](20201110_152001.jpg?raw=true "Prototype")
 ![Prototype Back](20201114_165149.jpg?raw=true "Back Side")
-
+![Prototype Speaker](20201117_184812.jpg?raw=true "with speaker") 
 
 ## Done:
 - built up the circuit on a protoboard
