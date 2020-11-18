@@ -9,8 +9,8 @@ void setup()
   for(int i=0; i<7; i++){
     pinMode(buttons[i], INPUT_PULLUP);
   }
-  pinMode(D3, OUTPUT);
-  digitalWrite(D3,LOW);
+  pinMode(AUDIOOUT, OUTPUT);
+  digitalWrite(AUDIOOUT, LOW);
   pinMode(OLEDSDA, OUTPUT);
   pinMode(OLEDSCA, OUTPUT);
   digitalWrite(OLEDSDA,0);

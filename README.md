@@ -18,7 +18,8 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Set up a crude state machine and timer interrupt for handling timesharing. 
 - move setupArp() out of the library and into main - parsing pots is UI stuff. The library should only expect the processed values.
 - Re-wired the OLED to use D2 instead of D3 (our Synth needs D3 as its output)
-- Quick and dirty amplifier onboard with a TDA7056B. Super loud. Need to implement volume control...
+- Quick and dirty amplifier onboard with a TDA7056B.
+- Fixed amplifier wiring. Implemented volume control and a ~5kHz LPF. Getting some hiss though
 
 ## Todo:
 - Make the code and library non-blocking, timer/state machine based (remove the use of delay() in engine.cpp )
