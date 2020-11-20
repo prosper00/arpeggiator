@@ -5,7 +5,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 ![Prototype Back](20201114_165149.jpg?raw=true "Back Side")
 ![Prototype Speaker](20201117_184812.jpg?raw=true "with speaker") 
 
-### CURRENT STATUS: BROKEN
+### CURRENT STATUS: WORKING (only with tone() output)
 - modified engine.cpp to call the synth library instead of outputting MIDI. Synth occasionally squeaks the speaker, but nothing musical at all. If I call synth AND MIDI, I get horribly choppy and intermittent notes on MIDI, and random-sounding sqwacks on the speaker. Commenting out the display routines helps somewhat, but doesn't solve the problem, which makes me think I'm pushing the CPU or interrupts too hard... but I'm only using two voices right now, and CPU of 32MHZ... the synth library should supposedly be able to power 4 voices at 40% CPU on a 16MHz board.
 - debug step: incorporate the use of 'tone()' where the MIDI call goes - seems to sort of work. Actually, this works surprisingly nicely. If I could do two (or more) voice polyphony, this might be all I need. I can do (analog) filtering on the output to get some nice sounds. Something to think about.
 - Tidied things up, killed a bunch of cosmetic compiler warnings. Added #defines in engine.cpp to select the output method. Now, the previously working 'tone()' output method doesn't work. Needs troubleshooting
