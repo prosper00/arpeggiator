@@ -4,6 +4,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 ![Prototype](20201110_152001.jpg?raw=true "Prototype")
 ![Prototype Back](20201114_165149.jpg?raw=true "Back Side")
 ![Prototype Speaker](20201117_184812.jpg?raw=true "with speaker") 
+![Schematic](arpeggiator.png?raw=true "Schematic")
 
 ### CURRENT STATUS: WORKING (only with tone() output)
 - modified engine.cpp to call the synth library instead of outputting MIDI. Synth occasionally squeaks the speaker, but nothing musical at all. If I call synth AND MIDI, I get horribly choppy and intermittent notes on MIDI, and random-sounding sqwacks on the speaker. Commenting out the display routines helps somewhat, but doesn't solve the problem, which makes me think I'm pushing the CPU or interrupts too hard... but I'm only using two voices right now, and CPU of 32MHZ... the synth library should supposedly be able to power 4 voices at 40% CPU on a 16MHz board.
@@ -27,6 +28,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Incorporated 'synth' library to generate the tones. Not working correctly. Need to troubleshoot
 - created a Makefile. Depends on an arduino-cli tool, and arduino environment. 'make' to compile, 'make flash' to upload. See contents for comments.
 - Tidied things up, killed a bunch of cosmetic compiler warnings. Added #defines in engine.cpp to select the output method.
+- Amplifier improvements - fix volume control knob, add a LPF to kill the PWM frequencies
 
 ## Todo:
 - Make the code and library non-blocking, timer/state machine based (remove the use of delay() in engine.cpp )
@@ -34,7 +36,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Implement an on-board synthesizer to generate our own tones (thinking of ripping off https://github.com/dzlonline/the_synth )
 - Still some bugs in ADC ISR - something timing-related is screwing with the muxer, and making it difficult to tell which reading is coming from which pin, especially if it's left free-running (I think the ISR is taking too many cycles. Using digitalRead is certainly to blame. Need to switch to port reads in the ISR)
 - Updating the display takes 80ms! Can I speed this up? Do I need to? May not be an issue if it's interruptable, and the important parts of the engine/synth are interrupt-driven. Using hardware i2c is probably not an option, as SDA/SCL are analog inputs
-- Amplifier improvements - fix volume control knob, add a LPF to kill the PWM frequencies
+- Amplifier improvements - do something about the hiss and USB power supply noise.
 
 ## Aspirational Todo (ideas):
 - Some form of filtering on board, probably incorporating a CD4051 and opamp. Maybe a programmable vibrato/reverb/chorus/distortion?
