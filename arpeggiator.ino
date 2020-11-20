@@ -32,11 +32,11 @@ void setup()
 
 void loop()
 {
-  unsigned long time_now = millis();
+  /*unsigned long time_now = millis();
   if((time_now - time_last) > 400){ //do this every 200ms
     time_last = time_now;
-    //updateDisplay(); //this takes 80ms :(
-  }
+    updateDisplay(); //this takes 80ms :(
+  }*/
   
   if (button_pressed)
   {

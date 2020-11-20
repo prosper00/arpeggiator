@@ -25,34 +25,34 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 //C Ionian      { C maj;  D min;  E min;  F maj;  G maj;  A min;  B dim  }
-chord ionian[7]     = {{0, maj},    {2, minor}, {4, minor}, {5, maj},   {7, maj},   {9, minor}, {11, dim}};
+const chord ionian[7]     = {{0, maj},    {2, minor}, {4, minor}, {5, maj},   {7, maj},   {9, minor}, {11, dim}};
 
 //C Dorian      { C min;  D min;  D♯ maj; F maj;  G min;  A dim;  A♯ maj  }
-chord dorian[7]     = {{0, minor},  {2, minor}, {3, maj},   {5, maj},   {7, minor}, {9, dim},   {10, maj}};
+const  chord dorian[7]     = {{0, minor},  {2, minor}, {3, maj},   {5, maj},   {7, minor}, {9, dim},   {10, maj}};
 
 //C Phrygian    { C min;  C♯ maj; D♯ maj; F min;  G dim;  G♯ maj; A♯ min  }
-chord phrygian[7]   = {{0, minor},  {1, maj},   {3, maj},   {5, minor}, {7, dim},   {8, maj},   {10, minor}};
+const  chord phrygian[7]   = {{0, minor},  {1, maj},   {3, maj},   {5, minor}, {7, dim},   {8, maj},   {10, minor}};
 
 //C Lydian      { C maj;  D maj;  E min;  F♯ dim; G maj;  A min;  B min   }
-chord lydian[7]     = {{0, maj},    {2, maj},   {4, minor}, {6, dim},   {7, maj},   {9, minor}, {11, minor}};
+const chord lydian[7]     = {{0, maj},    {2, maj},   {4, minor}, {6, dim},   {7, maj},   {9, minor}, {11, minor}};
 
 //C Mixolydian  { C maj;  D min;  E dim;  F maj;  G min;  A min;  A♯ maj  }
-chord mixolydian[7] = {{0, maj},    {2, minor}, {4, dim},   {5, maj},   {7, minor}, {9, minor}, {10, maj}};
+const  chord mixolydian[7] = {{0, maj},    {2, minor}, {4, dim},   {5, maj},   {7, minor}, {9, minor}, {10, maj}};
 
 //C Aeolian     { C min;  D dim;  D♯ maj; F min;  G min;  G♯ maj; A♯ maj  }
-chord aeolian[7]    = {{0, minor},  {2, dim},   {3, maj},   {5, minor}, {7, minor}, {8, maj},   {10, maj}};
+const  chord aeolian[7]    = {{0, minor},  {2, dim},   {3, maj},   {5, minor}, {7, minor}, {8, maj},   {10, maj}};
 
 //C harmonic    { C min;  D dim;  D♯ aug; F min;  G maj;  G♯ maj; B dim   }
-chord harmonic[7]   = {{0, minor},  {2, dim},   {3, aug},   {5, minor}, {7, maj},   {8, maj},   {11, dim}}; 
+const  chord harmonic[7]   = {{0, minor},  {2, dim},   {3, aug},   {5, minor}, {7, maj},   {8, maj},   {11, dim}}; 
 
 //C Locrian     { C dim;  C♯ maj; D♯ min; F min;  F♯ maj; G♯ maj; A♯ min  }
-chord locrian[7]    = {{0, dim},    {1, maj},   {3, minor}, {5, minor}, {6, maj},   {8, maj},   {10, minor}};
+const  chord locrian[7]    = {{0, dim},    {1, maj},   {3, minor}, {5, minor}, {6, maj},   {8, maj},   {10, minor}};
 
-chord *all_chords[8] = {ionian, dorian, phrygian, lydian, mixolydian, aeolian, harmonic, locrian};
+const  chord *all_chords[8] = {ionian, dorian, phrygian, lydian, mixolydian, aeolian, harmonic, locrian};
 
 
 // Arrange the N elements of ARRAY in random order.  
-void shuffle(uint8_t *array, size_t n)
+void shuffle(int *array, size_t n)
 {
     if (n > 1) 
     {
@@ -77,7 +77,7 @@ void arp::updateArp(uint8_t baseNoteVal,uint8_t baseOctaveVal,uint8_t octaveShif
 	mode        = all_chords[modenumVal];
 	modenum		= modenumVal;
 }
-
+	
 int arp::setProgression(unsigned int p)
 {
     if (p<8)
@@ -120,7 +120,7 @@ void arp::play()
     short n, shift, oct_shift=0, bn;
     unsigned short sh1, sh2, notes_added=0;
     notes curNote[3];
-    uint8_t notestoplay[15] = {0,0,0,0,0,0,0,0,0,0};
+    short notestoplay[15] = {0,0,0,0,0,0,0,0,0,0};
     // Play base note
     if ((int)baseNote + (int)mode[progression].Shift > 11)
         baseOctave++;
@@ -159,75 +159,45 @@ void arp::play()
 
     if (order==3)
       shuffle(notestoplay, notes_added);
-      
-      #ifdef MIDI_OUT      
-      /*************************************************/
-      /**    MIDI OUTPUT:                              */
-      /*************************************************/
-      MIDI.sendNoteOn(bn, 127, 1);
-      /*************************************************/
-      #endif
-
-      #ifdef SYNTH_OUT         
-      /*************************************************/
-      /**    Synth lib OUTPUT:                         */
-      /*************************************************/   
-      nanosynth.setLength(0,indelay*notes_added);     
-      nanosynth.mTrigger(0,bn);
-      /*************************************************/
-      #endif
-
-      #ifdef TONE_OUT
-      /*************************************************/
-      /**    TONE() OUTPUT:                            */
-      /*************************************************/
-      tone(3,  (pow (2.0, ((float)bn/12.0)))); //ugly. Converts a midi note number to a frequency value
-      delay(indelay/2);
-      delay(indelay/4);
-	  noTone(3);
-	  /**************************************************/
-      #endif
-
+    
+    #ifdef MIDI_OUT
+    MIDI.sendNoteOn(bn, 127, 1);
+    #endif
+    
+    #ifdef SYNTH_OUT
+    nanosynth.setLength(0,indelay*notes_added);
+    nanosynth.mTrigger(0,bn);
+    #endif
+    
+    tone(3,  (pow (2.0, ((float)bn/12.0)))); //ugly. Converts a midi note number to a frequency value
+    delay(indelay/2);
+    delay(indelay/4);
+	noTone(3);
+    
     for (i=0; i<notes_added; i++)
     {
         #ifdef MIDI_OUT
-        /**************************************************/
-        /**    MIDI OUTPUT:                               */
-        /**************************************************/
         MIDI.sendNoteOn(notestoplay[i], 127, 1);
-        delay(indelay);
-        MIDI.sendNoteOff(notestoplay[i], 0, 1);     // Stop the note
-        /**************************************************/ 
-        #endif
-
-        #ifdef SYNTH_OUT
-        /**************************************************/
-        /**     Synth lib OUTPUT:                         */
-        /**************************************************/ 
-        nanosynth.setLength(1,indelay);
-        nanosynth.mTrigger(1,notestoplay[i]);
-        delay(indelay);
-        /**************************************************/
         #endif
         
-        #ifdef TONE_OUT      
-        /**************************************************/
-        /**    'TONE()' OUTPUT:                           */
-        /**************************************************/ 
-        tone(3,  (pow (2.0, ((float)(notestoplay[i])/12.0)))); //ugly. Converts a midi note number to a frequency value
+        #ifdef SYNTH_OUT
+        //nanosynth.setLength(1,indelay*.7);
+        //nanosynth.mTrigger(1,notestoplay[i]);
+        #endif
+        
+        tone(3,  (pow (2.0, ((float)notestoplay[i]/12.0)))); //ugly. Converts a midi note number to a frequency value
         delay(indelay/2);
         noTone(3);
         delay(indelay/4);
-        /**************************************************/
+
+        #ifdef MIDI_OUT
+        MIDI.sendNoteOff(notestoplay[i], 0, 1);     // Stop the note
         #endif
     }
-    
+
     #ifdef MIDI_OUT
-    /**************************************************/
-    /**    MIDI OUTPUT:                               */
-    /**************************************************/
-    MIDI.sendNoteOff(bn, 0, 1); // Stop base note
-    /**************************************************/ 
+    //Stop base note
+    MIDI.sendNoteOff(bn, 0, 1);
     #endif
 }
 
@@ -245,8 +215,8 @@ arp::arp()
 
 void arp::midibegin()
 {
-    #ifdef MIDI_OUT
-	MIDI.begin(4);                      // Launch MIDI
+	#ifdef MIDI_OUT
+    MIDI.begin(4);                      // Launch MIDI
     #endif
 }
 
@@ -256,7 +226,7 @@ void arp::synthbegin()
 	nanosynth.begin(CHB);
 	
 	//voice[0-3],wave[0-6],pitch[0-127],envelope[0-4],length[0-127],mod[0-127:64=no mod]
-	nanosynth.setupVoice(0,TRIANGLE,0,ENVELOPE0,80,64);
-	nanosynth.setupVoice(1,TRIANGLE,0,ENVELOPE0,100,64);
+	nanosynth.setupVoice(0,TRIANGLE,30,ENVELOPE0,80,64);
+	nanosynth.setupVoice(1,TRIANGLE,31,ENVELOPE0,100,64);
 	#endif
 }

@@ -30,4 +30,5 @@ public:
 
 int* createChord(notes root, chord_types i, int *notes_array, unsigned short *sh1, unsigned short *sh2);
 short midiByNote (notes note, short octave);
+void shuffle(uint8_t *array, size_t n);
 
