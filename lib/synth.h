@@ -10,7 +10,7 @@
 //*************************************************************************************
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-#include "tables.h"
+#include "tables/tables.h"
 
 #define DIFF 1
 #define CHA 2
@@ -28,31 +28,31 @@
 #define ENVELOPE2 2
 #define ENVELOPE3 3
 
-#define FS 20000.0	//-Sample rate (NOTE: must match tables.h)
+#define FS 20000.0                     //-Sample rate (NOTE: must match tables.h)
 
-#define SET(x,y) (x |=(1<<y))		        		//-Bit set/clear macros
-#define CLR(x,y) (x &= (~(1<<y)))       			// |
-#define CHK(x,y) (x & (1<<y))           			// |
-#define TOG(x,y) (x^=(1<<y))            			//-+
+#define SET(x,y) (x |=(1<<y))          //-Bit set/clear macros
+#define CLR(x,y) (x &= (~(1<<y)))      // |
+#define CHK(x,y) (x & (1<<y))          // |
+#define TOG(x,y) (x^=(1<<y))           //-+
 
- volatile unsigned int PCW[4] = {
-  0, 0, 0, 0};			//-Wave phase accumolators
- volatile unsigned int FTW[4] = {
-  1000, 200, 300, 400};           //-Wave frequency tuning words
+ volatile unsigned int  PCW[4] = {
+  0, 0, 0, 0};                         //-Wave phase accumolators
+ volatile unsigned int  FTW[4] = {
+  1000, 200, 300, 400};                //-Wave frequency tuning words
  volatile unsigned char AMP[4] = {
-  255, 255, 255, 255};           //-Wave amplitudes [0-255]
- volatile unsigned int PITCH[4] = {
-  500, 500, 500, 500};          //-Voice pitch
- volatile int MOD[4] = {
-  20, 0, 64, 127};                         //-Voice envelope modulation [0-1023 512=no mod. <512 pitch down >512 pitch up]
- volatile unsigned int wavs[4];                                  //-Wave table selector [address of wave in memory]
- volatile unsigned int envs[4];                                  //-Envelopte selector [address of envelope in memory]
- volatile unsigned int EPCW[4] = {
-  0x8000, 0x8000, 0x8000, 0x8000}; //-Envelope phase accumolator
- volatile unsigned int EFTW[4] = {
-  10, 10, 10, 10};               //-Envelope speed tuning word
- volatile unsigned char divider = 4;                             //-Sample rate decimator for envelope
- volatile unsigned int tim = 0;
+  255, 255, 255, 255};                 //-Wave amplitudes [0-255]
+ volatile unsigned int  PITCH[4] = {
+  500, 500, 500, 500};                 //-Voice pitch
+ volatile int           MOD[4] = {
+  20, 0, 64, 127};                     //-Voice envelope modulation [0-1023 512=no mod. <512 pitch down >512 pitch up]
+ volatile unsigned int  wavs[4];        //-Wave table selector [address of wave in memory]
+ volatile unsigned int  envs[4];        //-Envelopte selector [address of envelope in memory]
+ volatile unsigned int  EPCW[4] = {
+  0x8000, 0x8000, 0x8000, 0x8000};     //-Envelope phase accumolator
+ volatile unsigned int  EFTW[4] = {
+  10, 10, 10, 10};                     //-Envelope speed tuning word
+ volatile unsigned char divider = 4;   //-Sample rate decimator for envelope
+ volatile unsigned int  tim = 0;
  volatile unsigned char tik = 0;
  volatile unsigned char output_mode;
 
@@ -60,7 +60,6 @@
 //*********************************************************************************************
 //  Audio driver interrupt
 //*********************************************************************************************
-
 SIGNAL(TIMER1_COMPA_vect)
 {
   //-------------------------------
@@ -73,7 +72,6 @@ SIGNAL(TIMER1_COMPA_vect)
   //-------------------------------
   // Volume envelope generator
   //-------------------------------
-
   if (!(((unsigned char*)&EPCW[divider])[1]&0x80))
     AMP[divider] = pgm_read_byte(envs[divider] + (((unsigned char*)&(EPCW[divider]+=EFTW[divider]))[1]));
   else
@@ -82,10 +80,9 @@ SIGNAL(TIMER1_COMPA_vect)
   //-------------------------------
   //  Synthesizer/audio mixer
   //-------------------------------
-
   OCR2A = OCR2B = 127 +
     ((
-  (((signed char)pgm_read_byte(wavs[0] + ((unsigned char *)&(PCW[0] += FTW[0]))[1]) * AMP[0]) >> 8) +
+    (((signed char)pgm_read_byte(wavs[0] + ((unsigned char *)&(PCW[0] += FTW[0]))[1]) * AMP[0]) >> 8) +
     (((signed char)pgm_read_byte(wavs[1] + ((unsigned char *)&(PCW[1] += FTW[1]))[1]) * AMP[1]) >> 8) +
     (((signed char)pgm_read_byte(wavs[2] + ((unsigned char *)&(PCW[2] += FTW[2]))[1]) * AMP[2]) >> 8) +
     (((signed char)pgm_read_byte(wavs[3] + ((unsigned char *)&(PCW[3] += FTW[3]))[1]) * AMP[3]) >> 8)
@@ -94,7 +91,8 @@ SIGNAL(TIMER1_COMPA_vect)
   //************************************************
   //  Modulation engine
   //************************************************
-  //  FTW[divider] = PITCH[divider] + (int)   (((PITCH[divider]/64)*(EPCW[divider]/64)) /128)*MOD[divider];
+//">>6" == "/64"
+//Can we not also replace the '/128' by '>>7' ?
   FTW[divider] = PITCH[divider] + (int)   (((PITCH[divider]>>6)*(EPCW[divider]>>6))/128)*MOD[divider];
 	tim++;
 }
@@ -112,62 +110,60 @@ public:
   //*********************************************************************
   //  Startup default
   //*********************************************************************
-
   void begin()
   {
     output_mode=CHA;
-    TCCR1A = 0x00;                                  //-Start audio interrupt
+    TCCR1A = 0x00;                     //-Start audio interrupt
     TCCR1B = 0x09;
     TCCR1C = 0x00;
-    OCR1A=16000000.0 / FS;			    //-Auto sample rate
-    SET(TIMSK1, OCIE1A);                            //-Start audio interrupt
-    sei();                                          //-+
+    OCR1A = F_CPU / FS;                //-Auto sample rate
+    SET(TIMSK1, OCIE1A);               //-Start audio interrupt
+    sei();                             //-+
 
-    TCCR2A = 0x83;                                  //-8 bit audio PWM
-    TCCR2B = 0x01;                                  // |
-    OCR2A = 127;                                    //-+
-    SET(DDRB, 3);				    //-PWM pin
+    TCCR2A = 0x83;                     //-8 bit audio PWM
+    TCCR2B = 0x01;                     // |
+    OCR2A = 127;                       //-+
+    SET(DDRB, 3);                      //-PWM pin
   }
 
   //*********************************************************************
   //  Startup fancy selecting varoius output modes
   //*********************************************************************
-
   void begin(unsigned char d)
   {
-    TCCR1A = 0x00;                                  //-Start audio interrupt
+    TCCR1A = 0x00;                     //-Start audio interrupt
     TCCR1B = 0x09;
     TCCR1C = 0x00;
-    OCR1A=16000000.0 / FS;			    //-Auto sample rate
-    SET(TIMSK1, OCIE1A);                            //-Start audio interrupt
-    sei();                                          //-+
+    OCR1A = F_CPU / FS;                //-Auto sample rate
+    SET(TIMSK1, OCIE1A);               //-Start audio interrupt
+    sei();                             //-+
 
     output_mode=d;
 
     switch(d)
     {
-    case DIFF:                                        //-Differntial signal on CHA and CHB pins (11,3)
-      TCCR2A = 0xB3;                                  //-8 bit audio PWM
-      TCCR2B = 0x01;                                  // |
-      OCR2A = OCR2B = 127;                            //-+
-      SET(DDRB, 3);				      //-PWM pin
-      SET(DDRD, 3);				      //-PWM pin
+    case DIFF:                         //-Differntial signal on CHA and CHB pins (11,3)
+      TCCR2A = 0xB3;                   //-8 bit audio PWM
+      TCCR2B = 0x01;                   // |
+      OCR2A = OCR2B = 127;             //-+
+      SET(DDRB, 3);                    //-PWM pin
+      SET(DDRD, 3);                    //-PWM pin
       break;
 
-    case CHB:                                         //-Single ended signal on CHB pin (3)
-      TCCR2A = 0x23;                                  //-8 bit audio PWM
-      TCCR2B = 0x01;                                  // |
-      OCR2A = OCR2B = 127;                            //-+
-      SET(DDRD, 3);				      //-PWM pin
+    case CHB:                          //-Single ended signal on CHB pin (3)
+      TCCR2A = 0x23;                   //-8 bit audio PWM
+      TCCR2B = 0x01;                   // |
+      OCR2A = OCR2B = 127;             //-+
+      SET(DDRD, 3);                    //-PWM pin
       break;
 
     case CHA:
     default:
-      output_mode=CHA;                                //-Single ended signal in CHA pin (11)
-      TCCR2A = 0x83;                                  //-8 bit audio PWM
-      TCCR2B = 0x01;                                  // |
-      OCR2A = OCR2B = 127;                            //-+
-      SET(DDRB, 3);				      //-PWM pin
+      output_mode=CHA;                 //-Single ended signal in CHA pin (11)
+      TCCR2A = 0x83;                   //-8 bit audio PWM
+      TCCR2B = 0x01;                   // |
+      OCR2A = OCR2B = 127;             //-+
+      SET(DDRB, 3);                    //-PWM pin
       break;
 
     }
@@ -176,13 +172,12 @@ public:
   //*********************************************************************
   //  Timing/sequencing functions
   //*********************************************************************
-
   unsigned char synthTick(void)
   {
     if(tik)
     {
       tik=0;
-      return 1;  //-True every 4 samples
+      return 1;                        //-True every 4 samples
     }
     return 0;
   }
@@ -199,7 +194,6 @@ public:
   //  Setup all voice parameters in MIDI range
   //  voice[0-3],wave[0-6],pitch[0-127],envelope[0-4],length[0-127],mod[0-127:64=no mod]
   //*********************************************************************
-
   void setupVoice(unsigned char voice, unsigned char wave, unsigned char pitch, unsigned char env, unsigned char length, unsigned int mod)
   {
     setWave(voice,wave);
@@ -212,7 +206,6 @@ public:
   //*********************************************************************
   //  Setup wave [0-6]
   //*********************************************************************
-
   void setWave(unsigned char voice, unsigned char wave)
   {
     switch (wave)
@@ -240,7 +233,6 @@ public:
   //*********************************************************************
   //  Setup Pitch [0-127]
   //*********************************************************************
-
   void setPitch(unsigned char voice,unsigned char MIDInote)
   {
     PITCH[voice]=pgm_read_word(&PITCHS[MIDInote]);
@@ -249,7 +241,6 @@ public:
   //*********************************************************************
   //  Setup Envelope [0-4]
   //*********************************************************************
-
   void setEnvelope(unsigned char voice, unsigned char env)
   {
     switch (env)
@@ -275,7 +266,6 @@ public:
   //*********************************************************************
   //  Setup Length [0-128]
   //*********************************************************************
-
   void setLength(unsigned char voice,unsigned char length)
   {
     EFTW[voice]=pgm_read_word(&EFTWS[length]);
@@ -284,7 +274,6 @@ public:
   //*********************************************************************
   //  Setup mod
   //*********************************************************************
-
   void setMod(unsigned char voice,unsigned char mod)
   {
     //    MOD[voice]=(unsigned int)mod*8;//0-1023 512=no mod
@@ -294,18 +283,16 @@ public:
   //*********************************************************************
   //  Midi trigger
   //*********************************************************************
-
   void mTrigger(unsigned char voice,unsigned char MIDInote)
   {
     PITCH[voice]=pgm_read_word(&PITCHS[MIDInote]);
     EPCW[voice]=0;
-    FTW[divider] = PITCH[voice] + (int)   (((PITCH[voice]>>6)*(EPCW[voice]>>6))/128)*MOD[voice];
+    FTW[divider] = PITCH[voice] + (int)   (((PITCH[voice]>>6)*(EPCW[voice]>>6))>>7)*MOD[voice];
   }
 
   //*********************************************************************
   //  Set frequency direct
   //*********************************************************************
-
   void setFrequency(unsigned char voice,float f)
   {
     PITCH[voice]=f/(FS/65535.0);
@@ -315,7 +302,6 @@ public:
   //*********************************************************************
   //  Set time
   //*********************************************************************
-
   void setTime(unsigned char voice,float t)
   {
     EFTW[voice]=(1.0/t)/(FS/(32767.5*10.0));//[s];
@@ -324,7 +310,6 @@ public:
   //*********************************************************************
   //  Simple trigger
   //*********************************************************************
-
   void trigger(unsigned char voice)
   {
     EPCW[voice]=0;
@@ -335,14 +320,13 @@ public:
   //*********************************************************************
   //  Suspend/resume synth
   //*********************************************************************
-
   void suspend()
   {
-    CLR(TIMSK1, OCIE1A);                            //-Stop audio interrupt
+    CLR(TIMSK1, OCIE1A);               //-Stop audio interrupt
   }
   void resume()
   {
-    SET(TIMSK1, OCIE1A);                            //-Start audio interrupt
+    SET(TIMSK1, OCIE1A);               //-Start audio interrupt
   }
 
 };

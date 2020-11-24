@@ -32,12 +32,21 @@ void setup()
 
 void loop()
 {
-  /*unsigned long time_now = millis();
-  if((time_now - time_last) > 400){ //do this every 200ms
-    time_last = time_now;
-    updateDisplay(); //this takes 80ms :(
-  }*/
+  unsigned long time_now = millis();
   
+  if((time_now - time_last) > 200){ //do this every 200ms
+    time_last = time_now;
+    mapPots();  // parse the raw poteniometer readings and update the engine
+  //  updateDisplay(); //this takes 80ms :(
+    for(int i = 0; i<7; i++){ // read out our buttons
+      if (!(digitalRead(buttons[i]))){
+        button_pressed = true;
+        ButtonVal = i+1;
+        break;
+      }
+    }
+  }
+
   if (button_pressed)
   {
     a.setProgression(ButtonVal-1);
@@ -142,8 +151,8 @@ void mapPots(){
   uint8_t  baseOctave  = MAP(pots[baseOctavepin],  0, 252, 7,  0);
   uint8_t  octaveShift = MAP(pots[octaveShiftpin], 0, 252, 7,  0);
   uint8_t  steps       = MAP(pots[stepspin],       0, 252, 8,  1);
-  uint16_t indelay     = pots[indelaypin] * 2;
   uint8_t  modenum     = MAP(pots[modepin],        0, 252, 7,  0);
+  uint16_t indelay     = pots[indelaypin]*2;
   uint8_t  order       = MAP(pots[orderpin],       0, 252, 0,  4);
   
   //pass the mapped pot values to the engine:
@@ -157,14 +166,11 @@ ISR(ADC_vect){
   tmp &= 0x0F;            // AND the first 4 bits (value of ADC pin being used) 
   ADMUX++;                // add 1 to ADMUX to read the next pin next time
   pots[tmp]=ADC>>8;       // read the value of the pot we just scanned
-  if(tmp==orderpin){        // if we've read the last pot
+  if(tmp==indelaypin){    // update tempo changes immediately
+    a.indelay     = pots[indelaypin] * 2;
+  }
+  else if(tmp==orderpin){   // if we've read the last pot
     ADCSRA &= ~(1 << ADEN); // disable ADC.
-    for(int i = 0; i<7; i++){ // read out our buttons
-      if (!(digitalRead(buttons[i]))){
-        button_pressed = true;
-        ButtonVal = i+1;
-      }
-    }
   }
 }
 
@@ -174,7 +180,6 @@ ISR(TIMER0_COMPA_vect){
   interval++;
   if(interval>=100){  //every hundredth time here, do this:
     interval=0;
-    mapPots();  // parse the raw poteniometer readings and update the engine
     scanPots(); // start the ADC again, to re-scan the pots.
   }
 }

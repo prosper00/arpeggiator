@@ -14,7 +14,6 @@ private:
     short baseOctave;
     short octaveShift;
     unsigned short steps;
-    unsigned int indelay;
     unsigned int progression;
     chord *mode;
     int order;
@@ -26,6 +25,7 @@ public:
     void midibegin();
     void synthbegin();
     uint8_t modenum;
+    unsigned int indelay;
 };
 
 int* createChord(notes root, chord_types i, int *notes_array, unsigned short *sh1, unsigned short *sh2);

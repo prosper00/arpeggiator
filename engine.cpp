@@ -5,14 +5,10 @@
 /** TONE_OUT - use arduino's TONE fuction
 /** SYNTH_OUT - use our onboard polyphonic synthesizer
 /** MIDI_OUT - use serial MIDI output
-/**
-/** Note - you should be able to select MIDI AND one of the 
-/** other two simultaneously. Selecting TONE and SYNTH will
-/** not work. (<-LIES! Doesn't work)
 /***********************************************************/ 
-#define TONE_OUT
+//#define TONE_OUT
 //#define SYNTH_OUT
-//#define MIDI_OUT
+#define MIDI_OUT
 
 #ifdef SYNTH_OUT
 #include "lib/synth.h"
@@ -172,7 +168,7 @@ void arp::play()
       /*************************************************/
       /**    Synth lib OUTPUT:                         */
       /*************************************************/   
-      nanosynth.setLength(0,indelay*notes_added);     
+      //nanosynth.setLength(0,indelay*notes_added);     
       nanosynth.mTrigger(0,bn);
       /*************************************************/
       #endif
@@ -182,8 +178,7 @@ void arp::play()
       /**    TONE() OUTPUT:                            */
       /*************************************************/
       tone(3,  (pow (2.0, ((float)bn/12.0)))); //ugly. Converts a midi note number to a frequency value
-      delay(indelay/2);
-      delay(indelay/4);
+      delay(indelay*2);
 	  noTone(3);
 	  /**************************************************/
       #endif
@@ -204,7 +199,7 @@ void arp::play()
         /**************************************************/
         /**     Synth lib OUTPUT:                         */
         /**************************************************/ 
-        nanosynth.setLength(1,indelay);
+        //nanosynth.setLength(1,indelay);
         nanosynth.mTrigger(1,notestoplay[i]);
         delay(indelay);
         /**************************************************/
@@ -255,8 +250,11 @@ void arp::synthbegin()
 	#ifdef SYNTH_OUT
 	nanosynth.begin(CHB);
 	
-	//voice[0-3],wave[0-6],pitch[0-127],envelope[0-4],length[0-127],mod[0-127:64=no mod]
-	nanosynth.setupVoice(0,TRIANGLE,0,ENVELOPE0,80,64);
-	nanosynth.setupVoice(1,TRIANGLE,0,ENVELOPE0,100,64);
+	//*********************************************************************
+	//  Setup all voice parameters in MIDI range
+	//  voice[0-3],wave[0-6],pitch[0-127],envelope[0-4],length[0-127],mod[0-127:64=no mod]
+	//*********************************************************************
+	nanosynth.setupVoice(0,SQUARE,0,ENVELOPE0,100,64);
+	nanosynth.setupVoice(1,SQUARE,0,ENVELOPE0,100,64);
 	#endif
 }
