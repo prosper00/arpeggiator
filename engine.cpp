@@ -7,8 +7,8 @@
 /** MIDI_OUT - use serial MIDI output
 /***********************************************************/ 
 //#define TONE_OUT
-//#define SYNTH_OUT
-#define MIDI_OUT
+#define SYNTH_OUT
+//#define MIDI_OUT
 
 #ifdef SYNTH_OUT
 #include "lib/synth.h"

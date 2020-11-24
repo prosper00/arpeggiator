@@ -34,10 +34,10 @@ void loop()
 {
   unsigned long time_now = millis();
   
-  if((time_now - time_last) > 200){ //do this every 200ms
-    time_last = time_now;
+  //if((time_now - time_last) > 200){ //do this every 200ms
+  //time_last = time_now;
     mapPots();  // parse the raw poteniometer readings and update the engine
-  //  updateDisplay(); //this takes 80ms :(
+    updateDisplay(); //this takes 80ms :(
     for(int i = 0; i<7; i++){ // read out our buttons
       if (!(digitalRead(buttons[i]))){
         button_pressed = true;
@@ -45,7 +45,6 @@ void loop()
         break;
       }
     }
-  }
 
   if (button_pressed)
   {
@@ -147,13 +146,13 @@ void scanPots(){
 
 // Processes the raw pot readings, and sends them to the arpegiator library
 void mapPots(){
-  uint8_t  baseNote    = MAP(pots[baseNotepin],    0, 252, 11, 0);
-  uint8_t  baseOctave  = MAP(pots[baseOctavepin],  0, 252, 7,  0);
-  uint8_t  octaveShift = MAP(pots[octaveShiftpin], 0, 252, 7,  0);
-  uint8_t  steps       = MAP(pots[stepspin],       0, 252, 8,  1);
-  uint8_t  modenum     = MAP(pots[modepin],        0, 252, 7,  0);
+  uint8_t  baseNote    = map(pots[baseNotepin],    0, 252, 11, 0);
+  uint8_t  baseOctave  = map(pots[baseOctavepin],  0, 252, 7,  0);
+  uint8_t  octaveShift = map(pots[octaveShiftpin], 0, 252, 7,  0);
+  uint8_t  steps       = map(pots[stepspin],       0, 252, 8,  1);
+  uint8_t  modenum     = map(pots[modepin],        0, 252, 7,  0);
   uint16_t indelay     = pots[indelaypin]*2;
-  uint8_t  order       = MAP(pots[orderpin],       0, 252, 0,  4);
+  uint8_t  order       = map(pots[orderpin],       0, 252, 0,  4);
   
   //pass the mapped pot values to the engine:
   a.updateArp(baseNote,baseNote,octaveShift,steps,indelay,modenum,order);

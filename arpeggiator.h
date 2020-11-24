@@ -35,6 +35,3 @@
 //Helper Macros
 #define sbi(var, mask)	((var) |= (uint8_t)(1 << (mask)))
 #define cbi(var, mask)	((var) &= (uint8_t)~(1 << (mask)))
-   //hopefully this is a little faster than arduino map(). Only lightly optimized, we're
-   //not using 'longs'
-#define MAP(raw,inlo,inhi,outlo,outhi) ( (raw-inlo)*(outhi-outlo) / (inhi-inlo) + outlo )
