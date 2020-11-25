@@ -136,7 +136,7 @@ void scanPots(){
  * Don't forget to re-enable it next time you want to scan the pots (easiest way is to call setupADC() again
  ******************************************************************************************************************/
  
-  ADCSRA = ((1 << ADPS0) | (1 << ADPS1) | (1 << ADPS2));   // prescaler to 128
+  ADCSRA = ((0 << ADPS0) | (0 << ADPS1) | (1 << ADPS2));   // prescaler to 16
   ADMUX = (0 | (1<<REFS0) | 1<<ADLAR);   // Set Voltage reference to Avcc (5v), starting at A0, left-aligned.
   DIDR0 = 0x1F; //Disable digital input registers on analog inputs A0-A5 
   ADCSRB &= ~( (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0)); //Select free running conversion.
@@ -163,6 +163,7 @@ ISR(ADC_vect){
   uint8_t tmp;
   tmp = ADMUX;            // read the value of previous ADMUX register
   tmp &= 0x0F;            // AND the first 4 bits (value of ADC pin being used) 
+  tmp--; //no idea why I need this, except without it, I read the wrong pot.
   ADMUX++;                // add 1 to ADMUX to read the next pin next time
   pots[tmp]=ADC>>8;       // read the value of the pot we just scanned
   if(tmp==indelaypin){    // update tempo changes immediately

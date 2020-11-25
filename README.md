@@ -6,10 +6,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 ![Prototype Speaker](20201117_184812.jpg?raw=true "with speaker") 
 ![Schematic](arpeggiator.png?raw=true "Schematic")
 
-### CURRENT STATUS: WORKING (only with tone() output)
-- modified engine.cpp to call the synth library instead of outputting MIDI. Synth occasionally squeaks the speaker, but nothing musical at all. If I call synth AND MIDI, I get horribly choppy and intermittent notes on MIDI, and random-sounding sqwacks on the speaker. Commenting out the display routines helps somewhat, but doesn't solve the problem, which makes me think I'm pushing the CPU or interrupts too hard... but I'm only using two voices right now, and CPU of 32MHZ... the synth library should supposedly be able to power 4 voices at 40% CPU on a 16MHz board.
-- debug step: incorporate the use of 'tone()' where the MIDI call goes - seems to sort of work. Actually, this works surprisingly nicely. If I could do two (or more) voice polyphony, this might be all I need. I can do (analog) filtering on the output to get some nice sounds. Something to think about.
-- Synth output is now also mostly-working. Not sure where the irregular glitches are coming from. Too much interrupt overhead? I've trimmed that WAY down already, and it DOES seem to have helped. Will look for more optimization options.
+### CURRENT STATUS: WORKING (monophonic only)
 
 ## Done:
 - built up the circuit on a protoboard
@@ -31,6 +28,10 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Tidied things up, killed a bunch of cosmetic compiler warnings. Added #defines in engine.cpp to select the output method.
 - Amplifier improvements - fix volume control knob, add a LPF to kill the PWM frequencies
 - Updated synth.h to work correctly at CPU clocks other than 16MHz (32MHz tested).
+- Seems my voltage is fluctuating, and causing the potentiometer values to fluctuate.... fix that (add a regulator?)
+- Made the synth ISR non-blocking (allow nested interrupts). Fixed glitching audio
+- Set ADC prescaler back to 16, seems to help stabilize fluctuating pot values. No idea why.
+- configurable MIDI, tone(), or synth output (see macros in engine.cpp)
 
 ## Todo:
 - Make the code and library non-blocking, timer/state machine based (remove the use of delay() in engine.cpp )
@@ -38,7 +39,6 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Still some bugs in ADC ISR - something timing-related is screwing with the muxer, and making it difficult to tell which reading is coming from which pin, especially if it's left free-running (I think the ISR is taking too many cycles. Using digitalRead is certainly to blame. Need to switch to port reads in the ISR)
 - Updating the display takes 80ms! Can I speed this up? Do I need to? May not be an issue if it's interruptable, and the important parts of the engine/synth are interrupt-driven. Using hardware i2c is probably not an option, as SDA/SCL are analog inputs. Display is currently disabled, I can't afford the cycles.
 - Amplifier improvements - do something about the hiss and USB power supply noise. A proper ground should help.
-- Seems my voltage is fluctuating, and causing the potentiometer values to fluctuate.... fix that (add a regulator?)
 
 ## Aspirational Todo (ideas):
 - Some form of filtering on board, probably incorporating a CD4051 and opamp. Maybe a programmable vibrato/reverb/chorus/distortion?
