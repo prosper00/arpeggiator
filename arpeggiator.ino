@@ -32,20 +32,6 @@ void setup()
 
 void loop()
 {
-  unsigned long time_now = millis();
-  
-  //if((time_now - time_last) > 200){ //do this every 200ms
-  //time_last = time_now;
-    mapPots();  // parse the raw poteniometer readings and update the engine
-    updateDisplay(); //this takes 80ms :(
-    for(int i = 0; i<7; i++){ // read out our buttons
-      if (!(digitalRead(buttons[i]))){
-        button_pressed = true;
-        ButtonVal = i+1;
-        break;
-      }
-    }
-
   if (button_pressed)
   {
     a.setProgression(ButtonVal-1);
@@ -54,6 +40,12 @@ void loop()
     a.play();
     digitalWrite(LEDPin, LOW);
   }
+  else   //takes 80ms. Can't afford the delay if we're playing.
+  {
+    updateDisplay(); 
+  }
+    
+  mapPots();  // parse the raw poteniometer readings and update the engine
 }
 
 //handle display output
@@ -117,22 +109,20 @@ void updateDisplay(){
 //Initialize ADC peripheral, and start scanning all 7 channels
 void scanPots(){
 /* ***************************************************************************************************************
- * We're setting up the ADC with a prescaler of 128. This gives us a clock of 250kHz on a 32MHz LGT8F chip.
- * According to the datasheet, up to 3MHz is OK for full resolution, but, each time it's finished scanning
- * a pin, it's going to generate an interrupt that we have to handle. Too many updates is unnecessary, and 
- * handling too many interrupts is just wasting cpu cycles.
+ * We're setting up the ADC with a prescaler of 16. This gives us a clock of 2MHz on a 32MHz LGT8F chip.
+ * According to the datasheet, up to 3MHz is OK for full resolution, though on an Arduino, we're pushing it a bit 
+ * hard. It may still work (an effective ADC clock of 1MHz), but if not, lower the prescaler somewhat. 
  * 
- * At a prescaler value of 128, we get:
- * ADCLK=F_CPU/128 = 250Hz
- * 15 cycles per conversion, = 16.7k conversions/second (each conversion = 1 interrupt)
- * 16.7k conversions / 7 potentiometers = 2381 scans per second
- * 1/2381 = 420us to scan all 7 pots. Really, this is still a good 100x as much as we NEED.
+ * At a prescaler value of 16, we get:
+ * ADCLK=F_CPU/16 = 2MHz
+ * 15 cycles per conversion, = 133k conversions/second (each conversion = 1 interrupt)
+ * 133k conversions / 7 potentiometers = 19048 scans per second
+ * 1/19048 = 52.5us to scan all 7 pots. Really, this is still a good 1000x as much as we NEED.
  * Therefore, we're going to disable the ADC after each 7 scans in the ISR, and leave
  * the loop to re-start scanning via scanPots(); when needed.
  * 
- * At a prescaler of 32, we'd take 4 times as long to read the pots, but should be more stable on atmegas
- * 
- * After scanning all 7 pots, we disable the ADC so that it's not generating unnecessary interrupts
+ * After scanning all 7 pots, we disable the ADC so that it's not generating unnecessary interrupts. We don't need
+ * to scan for user input any more often than about 50-100ms
  * Don't forget to re-enable it next time you want to scan the pots (easiest way is to call setupADC() again
  ******************************************************************************************************************/
  
@@ -147,7 +137,7 @@ void scanPots(){
 // Processes the raw pot readings, and sends them to the arpegiator library
 void mapPots(){
   uint8_t  baseNote    = map(pots[baseNotepin],    0, 252, 11, 0);
-  uint8_t  baseOctave  = map(pots[baseOctavepin],  0, 252, 7,  0);
+  uint8_t  baseOctave  = map(pots[baseOctavepin],  0, 252, 0,  7);
   uint8_t  octaveShift = map(pots[octaveShiftpin], 0, 252, 7,  0);
   uint8_t  steps       = map(pots[stepspin],       0, 252, 8,  1);
   uint8_t  modenum     = map(pots[modepin],        0, 252, 7,  0);
@@ -171,6 +161,13 @@ ISR(ADC_vect){
   }
   else if(tmp==orderpin){   // if we've read the last pot
     ADCSRA &= ~(1 << ADEN); // disable ADC.
+    for(int i = 0; i<7; i++){ // read out our buttons
+      if (!(digitalRead(buttons[i]))){
+        button_pressed = true;
+        ButtonVal = i+1;
+        break;
+      }
+    }
   }
 }
 

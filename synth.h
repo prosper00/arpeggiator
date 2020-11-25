@@ -93,7 +93,7 @@ ISR(TIMER1_COMPA_vect,ISR_NOBLOCK)
   //************************************************
 //">>6" == "/64"
 //Can we not also replace the '/128' by '>>7' ?
-  FTW[divider] = PITCH[divider] + (int)   (((PITCH[divider]>>6)*(EPCW[divider]>>6))/128)*MOD[divider];
+  FTW[divider] = PITCH[divider] + (int)   (((PITCH[divider]>>6)*(EPCW[divider]>>6))>>7)*MOD[divider];
 	tim++;
 }
 

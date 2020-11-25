@@ -11,7 +11,7 @@
 //#define MIDI_OUT
 
 #ifdef SYNTH_OUT
-#include "lib/synth.h"
+#include "synth.h"
 synth nanosynth;
 #endif
 
@@ -168,7 +168,8 @@ void arp::play()
       /*************************************************/
       /**    Synth lib OUTPUT:                         */
       /*************************************************/   
-      //nanosynth.setLength(0,indelay*notes_added);     
+      nanosynth.setLength(0,127);
+      nanosynth.setLength(1,64);
       nanosynth.mTrigger(0,bn);
       /*************************************************/
       #endif
@@ -199,7 +200,6 @@ void arp::play()
         /**************************************************/
         /**     Synth lib OUTPUT:                         */
         /**************************************************/ 
-        //nanosynth.setLength(1,indelay);
         nanosynth.mTrigger(1,notestoplay[i]);
         delay(indelay);
         /**************************************************/
@@ -222,6 +222,15 @@ void arp::play()
     /**    MIDI OUTPUT:                               */
     /**************************************************/
     MIDI.sendNoteOff(bn, 0, 1); // Stop base note
+    /**************************************************/ 
+    #endif
+    
+    #ifdef SYNTH_OUT
+    /**************************************************/
+    /**    SYNTH OUTPUT:                               */
+    /**************************************************/
+    nanosynth.setLength(0,0); //turn both voices off
+    nanosynth.setLength(1,0);
     /**************************************************/ 
     #endif
 }
@@ -255,6 +264,6 @@ void arp::synthbegin()
 	//  voice[0-3],wave[0-6],pitch[0-127],envelope[0-4],length[0-127],mod[0-127:64=no mod]
 	//*********************************************************************
 	nanosynth.setupVoice(0,SQUARE,0,ENVELOPE0,100,64);
-	nanosynth.setupVoice(1,SQUARE,0,ENVELOPE0,100,64);
+	nanosynth.setupVoice(1,SINE,0,ENVELOPE1,100,64);
 	#endif
 }

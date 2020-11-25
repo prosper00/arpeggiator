@@ -7,6 +7,8 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 ![Schematic](arpeggiator.png?raw=true "Schematic")
 
 ### CURRENT STATUS: WORKING (monophonic only)
+- Base Octave pot is not currently doing anything. 'Order' pot crashes at bottom limit.
+- Base Note doesn't seem to work with waveshapes other than SQUARE?!?
 
 ## Done:
 - built up the circuit on a protoboard
@@ -31,7 +33,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Seems my voltage is fluctuating, and causing the potentiometer values to fluctuate.... fix that (add a regulator?)
 - Made the synth ISR non-blocking (allow nested interrupts). Fixed glitching audio
 - Set ADC prescaler back to 16, seems to help stabilize fluctuating pot values. No idea why.
-- configurable MIDI, tone(), or synth output (see macros in engine.cpp)
+- configurable MIDI, tone(), or synth output (see defines in engine.cpp)
 
 ## Todo:
 - Make the code and library non-blocking, timer/state machine based (remove the use of delay() in engine.cpp )
@@ -39,6 +41,7 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - Still some bugs in ADC ISR - something timing-related is screwing with the muxer, and making it difficult to tell which reading is coming from which pin, especially if it's left free-running (I think the ISR is taking too many cycles. Using digitalRead is certainly to blame. Need to switch to port reads in the ISR)
 - Updating the display takes 80ms! Can I speed this up? Do I need to? May not be an issue if it's interruptable, and the important parts of the engine/synth are interrupt-driven. Using hardware i2c is probably not an option, as SDA/SCL are analog inputs. Display is currently disabled, I can't afford the cycles.
 - Amplifier improvements - do something about the hiss and USB power supply noise. A proper ground should help.
+- Synchronize synthesize note 'length' with the tempo (indelay) value of the sequencer.
 
 ## Aspirational Todo (ideas):
 - Some form of filtering on board, probably incorporating a CD4051 and opamp. Maybe a programmable vibrato/reverb/chorus/distortion?
@@ -47,3 +50,4 @@ Arduino MIDI arpeggiator, based on original work found here: https://github.com/
 - karplus-strong string synth (https://github.com/katspaugh/arduino-modular-synth/tree/master/arduino-karplus-strong)
 - Understand and embrace Mozzi for synthesis? (ugh. Wading through Mozzi source tree on github hurts my head.)
 - MIDI input - take our inputs from a MIDI keyboard instead of the buttons
+- Controls for: polyphony settings; envelope, waveshape, and modulation selection (but, we're almost out of pins on the Nano)
